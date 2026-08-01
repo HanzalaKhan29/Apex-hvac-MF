@@ -74,7 +74,12 @@ export default function ReviewsSection({
        * beneath; 3 at lg+. Uniform grid with align-items: stretch, so quotes of
        * differing length produce even card heights at every width (H.5.5).
        */}
+      {/* Z.19 — page-load entrance stagger, same mechanism as the homepage
+          services grid (B.23) and the brand strip. <EntranceMotion />'s own
+          threshold measurement is what keeps this a no-op on /reviews, where
+          the band sits well below the fold. */}
       <ul
+        data-entrance
         className={[
           heading ? 'mt-s6' : '',
           'grid list-none items-stretch gap-s3 md:grid-cols-2 md:gap-s4 lg:grid-cols-3',

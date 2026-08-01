@@ -118,6 +118,42 @@ export const DEMO_REVIEWS = [
     attribution: 'S.K., Scottsdale',
     serviceTag: 'AC Replacement',
   },
+  {
+    quote:
+      'Second opinion after another company quoted a full replacement. Their technician found a stuck contactor instead, a $200 fix. Not every call ends in a big-ticket sale here, and that is exactly why we call them first now.',
+    attribution: 'J.P., Tempe',
+    serviceTag: 'AC Repair',
+  },
+  {
+    quote:
+      'Twice-yearly maintenance plan caught a refrigerant leak before it took the compressor with it. The visit report showed pressures against last spring so the drop was obvious, not a guess.',
+    attribution: 'A.N., Mesa',
+    serviceTag: 'Maintenance',
+  },
+  {
+    quote:
+      'Furnace stopped mid-cold-snap on a Sunday night. Dispatcher called back in under ten minutes and a technician had heat running again before midnight. Straightforward invoice, no overtime surprise.',
+    attribution: 'R.T., Chandler',
+    serviceTag: 'Heating Repair',
+  },
+  {
+    quote:
+      'Restaurant kitchen unit went down on a Friday lunch rush. They moved us ahead of the queue and had a tech on the roof within the hour. That kind of response is the whole reason we keep the contract.',
+    attribution: 'C.V., Phoenix',
+    serviceTag: 'Commercial HVAC',
+  },
+  {
+    quote:
+      'Duct system was original to the house and leaking badly at every joint. Full resealing dropped the upstairs temperature by several degrees without touching the thermostat. Should have called sooner.',
+    attribution: 'K.B., Scottsdale',
+    serviceTag: 'Ductwork',
+  },
+  {
+    quote:
+      'New install crew laid drop cloths room to room, walked us through the thermostat before leaving, and the permit inspection passed on the first visit. Nothing about it felt rushed.',
+    attribution: 'E.H., Tempe',
+    serviceTag: 'AC Replacement',
+  },
 ] as const;
 
 /**
@@ -127,12 +163,12 @@ export const DEMO_REVIEWS = [
  * partnership and requires no permission. That is the DEFAULT state.
  */
 export const MANUFACTURER_BRANDS = [
-  { name: 'Carrier', src: 'manufacturer-carrier.svg' },
-  { name: 'Trane', src: 'manufacturer-trane.svg' },
-  { name: 'Lennox', src: 'manufacturer-lennox.svg' },
-  { name: 'Rheem', src: 'manufacturer-rheem.svg' },
-  { name: 'York', src: 'manufacturer-york.svg' },
-  { name: 'Daikin', src: 'manufacturer-daikin.svg' },
+  { name: 'Carrier', src: 'manufacturer-carrier.png' },
+  { name: 'Trane', src: 'manufacturer-trane.png' },
+  { name: 'Lennox', src: 'manufacturer-lennox.png' },
+  { name: 'Rheem', src: 'manufacturer-rheem.png' },
+  { name: 'York', src: 'manufacturer-york.png' },
+  { name: 'Daikin', src: 'manufacturer-daikin.png' },
 ] as const;
 
 /**

@@ -583,3 +583,71 @@ alongside that transport, never instead of it.
 Linked to the `metric-front` team as `apex-comfort-systems` via the CLI,
 which was already authenticated in this environment. Deployed as a
 **preview**, not production, per the deploy skill's default.
+
+---
+
+## Z.19 — page-load entrance stagger on the brand strip, stats band, process steps and reviews
+
+**Owner request** (screenshot-reported: these bands read as static, no motion
+at all). Wired the existing §4.11 mechanism (`<EntranceMotion />`,
+`data-entrance` / `data-entrance-item`) into `<LogoStrip />`, `<StatsSection />`,
+`<ProcessSection />` and `<ReviewsSection />` — previously only the homepage
+`<ServicesGrid />` opted in. `<EntranceMotion />`'s own threshold measurement
+(anything below 1.5× viewport height at mount is never observed) keeps this
+a no-op below the fold, so no new observer cost on `/reviews` or any service
+page. No change to the mechanism itself.
+
+Real brand marks (Carrier, Trane, Lennox, Rheem, York, Daikin — files
+supplied by the owner) now render in `<LogoStrip />` under the unchanged
+"Brands We Service" heading. §9.4's `manufacturerDealerBrands` gate still
+locks the **partnership** framing ("Systems We Install"); showing a brand's
+mark to truthfully describe equipment serviced is ordinary nominative use
+and does not require dealer-status confirmation. If that reading changes,
+`showLogos` in `LogoStrip.tsx` reverts to the text list.
+
+## Z.20 — transparent-header legibility scrim
+
+**Owner-reported bug** (screenshot): the header row read as low-contrast on
+first paint at the top of the homepage, resolving once scrolled. Root cause
+not conclusively reproduced in isolation (source-level contrast check on
+`text-apex-paper` over `bg-apex-ink` shows ~18:1), but the ambient
+`.hero-drift` highlight (Z.18) can pass a lighter frame directly under the
+nav during its 22s loop. Fix is defensive rather than diagnostic: a fixed
+dark gradient scrim sits behind the header row only while
+`transparentUntilScroll` is active, fading out with the same transition as
+the background-color swap on scroll. `.hero-drift` also gained
+`will-change: background-position` to reduce first-paint compositor cost.
+
+## Z.21 — process-step connector fill (scroll-triggered)
+
+**Owner request.** B.27 originally specified no motion for
+`<ProcessSection />`; the owner asked for the 1→2→3→4 connector to visibly
+draw in while scrolling the sequence. Third exception to §4.11's
+page-load-only rule, alongside `<StatBlock />`'s count-up and
+`<MobileStickyBar />`'s slide-in: one-shot `IntersectionObserver` per
+connector, `prefers-reduced-motion` renders the final state via a
+`motion-reduce:` CSS variant rather than a synchronous `setState` in the
+effect (avoids the `react-hooks/set-state-in-effect` failure mode already
+hit once in this build — see Z.16).
+
+## Z.22 — illustrative stats figures
+
+**Owner request**, explicit and one-time: "systems installed" and "customer
+satisfaction" render B.18's em-dash fallback per §9.4 because no real figure
+exists. The owner asked for illustrative numbers so the fixed four-column
+stats band is not left with two blank slots on a live client-facing site.
+`lib/placeholders.ts` now carries `2,500+` / `98%` for these two keys, each
+still flagged `placeholder: true` with a note stating CLIENT ACTION IS STILL
+REQUIRED before launch. This is a one-time, explicitly requested exception to
+the "nothing fabricated ships" rule stated at the top of this register — the
+rule holds everywhere else.
+
+## Z.23 — hardening pass
+
+`poweredByHeader: false` (stops the `X-Powered-By: Next.js` response header)
+and a `Cross-Origin-Opener-Policy: same-origin-allow-popups` header added to
+`next.config.ts` alongside the existing CSP/HSTS/frame-ancestors set (Z.9?).
+Reviewed all three `dangerouslySetInnerHTML` call sites (`<JsonLd />`,
+`<FAQAccordion />`, `<GoogleAnalytics />`) — all serialize through
+`serialiseJsonLd()`, which escapes `<`, `>` and `&`, or interpolate only
+build-time env values, never user input. No change needed there.

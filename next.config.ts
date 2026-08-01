@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
   // F.2 — trailing slashes normalised off.
   trailingSlash: false,
 
+  // OWASP A05 — stop advertising the framework/version in every response.
+  poweredByHeader: false,
+
   // J.3 — AVIF and WebP variants generated from JPEG sources.
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -72,6 +75,14 @@ const nextConfig: NextConfig = {
             key: 'Strict-Transport-Security',
             value: 'max-age=63072000; includeSubDomains; preload',
           },
+          {
+            // Isolates this browsing context from cross-origin openers
+            // (Spectre-class defence). "allow-popups" so the Turnstile
+            // widget's own popup path, if it ever needs one, still works.
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin-allow-popups',
+          },
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
         ],
       },
     ];

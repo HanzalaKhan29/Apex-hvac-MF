@@ -44,7 +44,10 @@ export default function ProcessSection({
         level={2}
         id={headingId}
       />
-      <ol className={`mt-s6 grid list-none grid-cols-1 gap-s5 ${columns}`}>
+      {/* Z.19 — page-load entrance stagger (see <LogoStrip />). Independent of
+          and additive to each <ProcessStep />'s own scroll-triggered
+          connector fill (Z.21). */}
+      <ol data-entrance className={`mt-s6 grid list-none grid-cols-1 gap-s5 ${columns}`}>
         {steps.map((step, i) => (
           <ProcessStep
             key={step.title}

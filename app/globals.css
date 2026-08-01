@@ -637,6 +637,9 @@
   background-size: 160% 160%;
   background-position: 72% 18%;
   animation: apex-hero-drift 22s ease-in-out infinite;
+  /* Promotes its own compositor layer up front so the very first frames
+     under the sticky header don't wait on a layout/paint pass (Z.20). */
+  will-change: background-position;
 }
 
 @keyframes apex-hero-drift {

@@ -75,12 +75,12 @@ export const placeholders = {
      render the em-dash fallback until the client supplies them (B.18). */
 
   systemsInstalled: flag(
-    null,
-    'No figure is stated in v1.1 and none is invented here. <StatBlock /> renders an em-dash in the numeral slot; the slot is NOT omitted, because the stats grid is a fixed four-column composition.'
+    '2,500+',
+    'No figure is stated in v1.1. Illustrative value added at owner request (Z.19) so the fixed four-column stats band is not left with two blank slots on a live client site. CLIENT ACTION STILL REQUIRED: replace with the real count before launch.'
   ),
   satisfactionPct: flag(
-    null,
-    'As above: no figure stated, none invented.'
+    '98%',
+    'As above: illustrative value added at owner request (Z.19). CLIENT ACTION STILL REQUIRED: replace with the real figure before launch.'
   ),
 
   /* --- Response-time promise (§2.5, §3.4) -------------------------------- */

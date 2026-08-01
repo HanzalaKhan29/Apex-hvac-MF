@@ -119,6 +119,28 @@ export default function SiteHeader({
           : 'bg-apex-paper/95 text-n-950 shadow-sm [--accent:var(--color-apex-copper)] lg:backdrop-blur',
       ].join(' ')}
     >
+      {/*
+       * Z.20 — a fixed dark scrim behind the transparent-resting header row.
+       * The transparent state is meant to sit on the dark hero, but the hero's
+       * own ambient drift highlight (.hero-drift, Z.18) can pass a lighter
+       * patch directly under the nav on some frames, which reads as
+       * low-contrast/washed-out text until the header switches to its solid
+       * state on scroll. This scrim guarantees legibility independent of
+       * whatever the hero is doing behind it. Decorative only, and it fades
+       * out with the same transition as the background-color swap above.
+       */}
+      {transparentUntilScroll ? (
+        <div
+          aria-hidden="true"
+          className={[
+            'pointer-events-none absolute inset-x-0 top-0 -z-10 h-[calc(var(--header-h)+var(--topbar-h))]',
+            'bg-gradient-to-b from-black/45 via-black/15 to-transparent',
+            'transition-opacity duration-[var(--dur-button)] ease-out',
+            transparent ? 'opacity-100' : 'opacity-0',
+          ].join(' ')}
+        />
+      ) : null}
+
       <Topbar cities={SERVICE_AREAS} />
 
       <div className="container-max flex h-[var(--header-h)] items-center justify-between gap-s4 px-[var(--section-padding-inline)]">

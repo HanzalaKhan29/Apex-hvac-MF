@@ -28,9 +28,13 @@ export default function StatsSection({ stats }: StatsSectionProps) {
       <h2 id="stats-heading" className="visually-hidden">
         Apex Comfort Systems by the numbers
       </h2>
-      <div className="grid grid-cols-2 gap-s5 lg:grid-cols-4">
+      {/* Z.19 — page-load entrance stagger (see <LogoStrip />); independent of
+          and additive to <StatBlock />'s own once-only count-up. */}
+      <div data-entrance className="grid grid-cols-2 gap-s5 lg:grid-cols-4">
         {stats.map((stat) => (
-          <StatBlock key={stat.label} {...stat} ground="ink" />
+          <div key={stat.label} data-entrance-item>
+            <StatBlock {...stat} ground="ink" />
+          </div>
         ))}
       </div>
     </Section>
