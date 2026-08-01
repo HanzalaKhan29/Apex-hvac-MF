@@ -4,6 +4,17 @@ import ReviewCard, { type ReviewCardProps } from './ReviewCard';
 import Button from './Button';
 
 /**
+ * Z.25 note: the Framer Motion marquee (<ReviewsMarquee />) for the `full`
+ * /reviews listing is NOT imported here. A first attempt put it behind
+ * `next/dynamic` inside this shared component, but Next still associated the
+ * chunk with every route that imports <ReviewsSection /> — including the
+ * homepage's `curated` usage, which never renders it — and blew the J.4
+ * homepage budget by ~40KB. The dynamic import now lives directly in
+ * app/[locale]/(indexed)/reviews/page.tsx instead, so the module graph
+ * genuinely differs per route and Framer Motion never reaches the homepage.
+ */
+
+/**
  * B.28 — <ReviewsSection />
  *
  * The curated review band (homepage) and the full set (/reviews) (§5.10).
@@ -73,11 +84,10 @@ export default function ReviewsSection({
        * H.2.8 — 1 column below md; 2 at md–lg with the third card full-width
        * beneath; 3 at lg+. Uniform grid with align-items: stretch, so quotes of
        * differing length produce even card heights at every width (H.5.5).
+       *
+       * Z.19 — page-load entrance stagger, same mechanism as the homepage
+       * services grid (B.23) and the brand strip.
        */}
-      {/* Z.19 — page-load entrance stagger, same mechanism as the homepage
-          services grid (B.23) and the brand strip. <EntranceMotion />'s own
-          threshold measurement is what keeps this a no-op on /reviews, where
-          the band sits well below the fold. */}
       <ul
         data-entrance
         className={[

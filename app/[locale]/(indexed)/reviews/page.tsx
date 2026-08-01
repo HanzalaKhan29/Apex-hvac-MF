@@ -1,12 +1,22 @@
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import Section from '@/components/Section';
 import SectionHeading from '@/components/SectionHeading';
-import ReviewsSection from '@/components/ReviewsSection';
 import Button from '@/components/Button';
 import FooterCTA from '@/components/FooterCTA';
 import { SITE_URL } from '@/lib/contact';
 import { DEMO_REVIEWS, HOME } from '@/lib/content';
 import { ph } from '@/lib/placeholders';
+
+/**
+ * Z.25 — dynamically imported HERE, not from a component shared with the
+ * homepage. Framer Motion (<ReviewsMarquee />'s dependency) only needs to
+ * reach this one route's bundle; keeping the import local to this route file
+ * is what actually achieves that with Next's dynamic-chunk analysis — see the
+ * note in components/ReviewsSection.tsx for why a shared-component version of
+ * this blew the homepage's J.4 budget on the first attempt.
+ */
+const ReviewsMarquee = dynamic(() => import('@/components/ReviewsMarquee'));
 
 /**
  * A.10 — `/reviews`. StandardPageTemplate.
@@ -58,13 +68,15 @@ export default function ReviewsPage() {
         />
       </Section>
 
-      <ReviewsSection
-        variant="full"
-        mode="demo"
-        reviews={DEMO_REVIEWS.map((r) => ({ ...r }))}
-        ground="n50"
-        id="all-reviews"
-      />
+      <Section id="all-reviews" ground="n50" labelledBy="all-reviews-heading">
+        {/* B.7 / I.1 — a landmark is never anonymous; this band IS the page,
+            so the heading is visually hidden rather than omitted, exactly as
+            <ReviewsSection /> does for this same case. */}
+        <h2 id="all-reviews-heading" className="visually-hidden">
+          Customer reviews
+        </h2>
+        <ReviewsMarquee reviews={DEMO_REVIEWS.map((r) => ({ ...r }))} mode="demo" />
+      </Section>
 
       {/* Leave-a-review prompt. The URL is CLIENT ACTION REQUIRED and THE
           BLOCK DOES NOT RENDER until it is supplied (A.10). */}

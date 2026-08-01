@@ -28,7 +28,10 @@ import { gateOpen } from '@/lib/placeholders';
  */
 
 export interface LogoStripProps {
-  brands: readonly { name: string; src: string }[];
+  /** width/height must be the file's real intrinsic size (see lib/content.ts) —
+   *  a mismatched fallback ratio is what produced the cropped-looking Carrier
+   *  logo before the real load window. */
+  brands: readonly { name: string; src: string; width: number; height: number }[];
   heading?: string;
 }
 
@@ -77,9 +80,9 @@ export default function LogoStrip({ brands, heading }: LogoStripProps) {
               <Image
                 src={`/brands/${brand.src}`}
                 alt={brand.name}
-                width={140}
-                height={48}
-                className="h-9 w-auto object-contain opacity-60 grayscale transition-all duration-[var(--dur-hover)] ease-out hover:scale-105 hover:opacity-100 hover:grayscale-0"
+                width={brand.width}
+                height={brand.height}
+                className="h-9 w-auto max-w-[7.5rem] object-contain opacity-60 grayscale transition-all duration-[var(--dur-hover)] ease-out hover:scale-105 hover:opacity-100 hover:grayscale-0"
               />
             ) : (
               <span className="text-body font-semibold text-n-700">{brand.name}</span>

@@ -162,13 +162,20 @@ export const DEMO_REVIEWS = [
  * "Brands We Service" TEXT LIST, which asserts servicing rather than
  * partnership and requires no permission. That is the DEFAULT state.
  */
+/**
+ * width/height are each file's REAL intrinsic pixel size (verified via the
+ * PNG header, not guessed). Next/Image's `aspect-ratio: auto W/H` falls back
+ * to these props only until the real image decodes; a mismatched fallback
+ * (e.g. a generic 140×48 box against Carrier's real 262×142 oval) reserves
+ * the wrong box during that load window, which read as a cropped logo.
+ */
 export const MANUFACTURER_BRANDS = [
-  { name: 'Carrier', src: 'manufacturer-carrier.png' },
-  { name: 'Trane', src: 'manufacturer-trane.png' },
-  { name: 'Lennox', src: 'manufacturer-lennox.png' },
-  { name: 'Rheem', src: 'manufacturer-rheem.png' },
-  { name: 'York', src: 'manufacturer-york.png' },
-  { name: 'Daikin', src: 'manufacturer-daikin.png' },
+  { name: 'Carrier', src: 'manufacturer-carrier.png', width: 262, height: 142 },
+  { name: 'Trane', src: 'manufacturer-trane.png', width: 160, height: 148 },
+  { name: 'Lennox', src: 'manufacturer-lennox.png', width: 253, height: 148 },
+  { name: 'Rheem', src: 'manufacturer-rheem.png', width: 153, height: 148 },
+  { name: 'York', src: 'manufacturer-york.png', width: 188, height: 148 },
+  { name: 'Daikin', src: 'manufacturer-daikin.png', width: 225, height: 148 },
 ] as const;
 
 /**

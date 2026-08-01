@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Menu, Star } from 'lucide-react';
@@ -82,6 +82,24 @@ export default function SiteHeader({
   const hamburgerRef = useRef<HTMLButtonElement>(null);
 
   /*
+   * Z.24 — owner-reported: the header briefly reads as a washed-out/pale
+   * version of its final state right at page load, settling a moment later.
+   * Not reproducible from a static style inspection (computed colors and the
+   * Z.20 scrim are both correct at rest), which points at a transient first
+   * paint rather than a wrong value — most likely the background-color
+   * transition below firing across the very first hydration commit. Fix is
+   * structural rather than another guess at the cause: the transition class
+   * is withheld until one tick after mount, so whatever renders first (SSR
+   * output or the first client paint) renders instantly, with nothing to
+   * visibly fade from. Scroll-triggered swaps after that still animate.
+   */
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+
+  /*
    * B.4 — "Focus is trapped inside the drawer while open and RETURNED TO THE
    * HAMBURGER on close." Without this the drawer closes and focus falls back
    * to <body>, so a keyboard user loses their place entirely and has to tab
@@ -113,7 +131,7 @@ export default function SiteHeader({
     <header
       className={[
         'sticky top-0 z-[var(--z-header)]',
-        'transition-[background-color,box-shadow] duration-[var(--dur-button)] ease-out',
+        mounted ? 'transition-[background-color,box-shadow] duration-[var(--dur-button)] ease-out' : '',
         transparent
           ? 'bg-transparent text-apex-paper [--accent:var(--color-apex-copper-dark)]'
           : 'bg-apex-paper/95 text-n-950 shadow-sm [--accent:var(--color-apex-copper)] lg:backdrop-blur',
@@ -135,7 +153,7 @@ export default function SiteHeader({
           className={[
             'pointer-events-none absolute inset-x-0 top-0 -z-10 h-[calc(var(--header-h)+var(--topbar-h))]',
             'bg-gradient-to-b from-black/45 via-black/15 to-transparent',
-            'transition-opacity duration-[var(--dur-button)] ease-out',
+            mounted ? 'transition-opacity duration-[var(--dur-button)] ease-out' : '',
             transparent ? 'opacity-100' : 'opacity-0',
           ].join(' ')}
         />
