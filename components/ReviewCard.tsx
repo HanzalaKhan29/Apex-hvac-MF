@@ -45,7 +45,15 @@ export default function ReviewCard({
 }: ReviewCardProps) {
   return (
     <li className="flex">
-      <figure className="flex w-full flex-col rounded-xl border border-n-200 bg-white p-s4 shadow-sm md:p-s5">
+      {/*
+       * B.20: "Visual. Standard card treatment per §4.7." §4.7 itself reads
+       * "box-shadow: var(--shadow-sm) at rest, var(--shadow-md) on hover" —
+       * this was previously missing here even though the rule already applied
+       * to it. focus-within gives keyboard users the same affordance a mouse
+       * user gets, matching <ServiceCard />'s pattern (§6.1 item 5). CSS-only,
+       * no animation library — J.4.
+       */}
+      <figure className="group flex w-full flex-col rounded-xl border border-n-200 bg-white p-s4 shadow-sm transition-[box-shadow,translate] duration-[var(--dur-hover)] ease-out hover:-translate-y-1 hover:shadow-md focus-within:-translate-y-1 focus-within:shadow-md md:p-s5">
         {/* Category tag — a pill at --r-sm, one step below the card's --r-xl. */}
         <div className="flex items-center justify-between gap-s3">
           <span className="inline-flex rounded-sm bg-n-100 px-s2 py-s1 text-micro font-semibold text-n-700">
