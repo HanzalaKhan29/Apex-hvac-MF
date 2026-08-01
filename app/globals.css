@@ -1,0 +1,624 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   APEX COMFORT SYSTEMS — DESIGN TOKEN MANIFEST
+   Appendix C, implemented as a Tailwind v4 @theme block (C.0, §4.1, §9.3).
+
+   This block is the single source of truth for colour, type, spacing, radius,
+   shadow, breakpoints, z-index and motion. No component may introduce a value
+   not present here (§9.3, B.0).
+
+   Colour values are authoritative in OKLCH. Hex values in comments are
+   reference approximations for design tooling only; where the two appear to
+   differ, OKLCH governs (C.0).
+
+   Namespace note: Appendix C names tokens `--apex-ink`, `--n-950`, `--s-4`,
+   `--r-md` and so on. Tailwind v4 only generates a utility for a token that
+   sits in one of its namespaces, and §4.1 requires `bg-apex-ink/60` to work.
+   Tokens are therefore declared under the Tailwind namespace that generates
+   the utility, and every Appendix C name is aliased to it immediately below,
+   so `var(--apex-ink)` and `bg-apex-ink/60` both resolve to one value.
+   ========================================================================== */
+
+@theme {
+  /* --- Namespace resets ---------------------------------------------------
+     Each closed set below is cleared before it is redeclared, so a value
+     absent from this manifest cannot be reached from a utility class.
+     `--spacing` is deliberately NOT cleared: Tailwind's 4px base is a
+     superset containing all nine C.7 steps, and clearing it would also remove
+     the 24px icon sizing §4.9 requires. */
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --leading-*: initial;
+  --tracking-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --breakpoint-*: initial;
+  --ease-*: initial;
+
+  /* ======================================================================
+     C.1 — COLOUR, BRAND
+     ====================================================================== */
+
+  /* Primary dark surface. Header and footer grounds, hero ground, stats band,
+     primary text on light backgrounds. */
+  --color-apex-ink: oklch(19% 0.03 255); /* #0A1421 */
+
+  /* Elevated dark surface. Cards on dark sections. Expresses elevation on ink
+     grounds, where shadows are never used (§4.6a). */
+  --color-apex-ink-2: oklch(24% 0.032 255); /* #15202E */
+
+  /* Primary light background. Page ground, form-input ground. */
+  --color-apex-paper: oklch(98% 0.006 90); /* #FAF8F4 */
+
+  /* DEFAULT ACCENT. Button fills, focus rings, active nav, eyebrows and links
+     on LIGHT grounds only. */
+  --color-apex-copper: oklch(55% 0.13 48); /* #AD5622 */
+
+  /* Accent, pressed. Button hover and active. */
+  --color-apex-copper-hover: oklch(49% 0.135 48); /* #994407 */
+
+  /* Accent on dark. REQUIRED for copper text on ink / ink-2. Never on light. */
+  --color-apex-copper-dark: oklch(61% 0.13 48); /* #C16836 */
+
+  /* Efficiency / financing. Text on light, and fill beneath white text. */
+  --color-apex-sage: oklch(52% 0.06 150); /* #507357 */
+
+  /* Financing surface. Pairs with --apex-ink text only. */
+  --color-apex-sage-tint: oklch(95% 0.02 150); /* #E9F1EA */
+
+  /* The 24/7 emergency badge and the topbar status dot ONLY. Never a CTA. */
+  --color-emergency: oklch(52% 0.17 27); /* #B23225 */
+
+  /* ======================================================================
+     C.2 — COLOUR, NEUTRAL SCALE
+     OKLCH tints of Apex Ink at hue 255 (Appendix Z, derived from §4.2).
+     ====================================================================== */
+
+  --color-n-950: oklch(22% 0.022 255); /* #1B2430 — body text on light, ~14.9:1 */
+  --color-n-700: oklch(46% 0.02 255); /* #5C6673 — secondary text, labels, ~6.4:1 */
+  --color-n-400: oklch(56% 0.018 255); /* #757F8D — placeholder, disabled, CONTROL BORDERS, ~4.9:1 */
+  --color-n-200: oklch(89% 0.006 255); /* #DCDEE2 — card borders, dividers, rules (decorative) */
+  --color-n-100: oklch(94% 0.005 255); /* #ECEDF0 — card backgrounds, icon-badge rest fill */
+  --color-n-50: oklch(96.5% 0.004 255); /* #F3F4F6 — section background alternation */
+
+  /* ======================================================================
+     C.3 — COLOUR, SEMANTIC
+     ====================================================================== */
+
+  /* Confirmation, and the "same-day available" indicator dot. Uses Quiet Sage,
+     not a generic green (§4.2). */
+  --color-success: oklch(52% 0.06 150);
+
+  /* Caution. Form validation only, used minimally. ~5.5:1 on paper. */
+  --color-warning: oklch(54% 0.13 70); /* ≈#8A5A0F */
+
+  /* FORM ERRORS ONLY. ~6.6:1 on paper. Deliberately separated from copper in
+     hue (25 vs 48) so an error never reads as a call to action. The emergency
+     badge uses --color-emergency exclusively (C.3, Appendix Z). */
+  --color-danger: oklch(48% 0.16 25); /* ≈#9F2A22 */
+
+  /* Absolutes retained after the namespace reset. */
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* ======================================================================
+     C.4 — TYPOGRAPHY, FAMILIES
+     All three load via next/font/google with font-display: swap and a
+     metrics-matched fallback (J.2, §9.3). The --ff-* variables are supplied
+     by next/font in app/layout.tsx.
+     ====================================================================== */
+
+  /* Display and interface. H1–H4, eyebrows, button labels, nav labels. 600–800. */
+  --font-geist: var(--ff-geist), ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Body. All body copy, form labels, card descriptions. 400–600. */
+  --font-inter: var(--ff-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Numerals. Every digit representing a statistic, price, rating or phone
+     number. Applied EXCLUSIVELY through the .num utility, never via a raw
+     font-family declaration (§4.3). Weight 500 only. */
+  --font-roboto: var(--ff-roboto), ui-sans-serif, system-ui, sans-serif;
+
+  /* ======================================================================
+     C.5 — TYPOGRAPHY, SCALE
+     Fluid clamp() scale. Nothing is hand-sized per breakpoint (H.9.1).
+     Line-heights from C.6 are paired to each step.
+     ====================================================================== */
+
+  --text-display: clamp(2.75rem, 2.1rem + 3.2vw, 4.75rem);
+  --text-display--line-height: 1.05;
+
+  --text-h1: clamp(2.1rem, 1.7rem + 2vw, 3.25rem);
+  --text-h1--line-height: 1.05;
+
+  --text-h2: clamp(1.6rem, 1.4rem + 1vw, 2.35rem);
+  --text-h2--line-height: 1.15;
+
+  --text-h3: clamp(1.25rem, 1.15rem + 0.5vw, 1.6rem);
+  --text-h3--line-height: 1.3;
+
+  --text-h4: clamp(1.05rem, 1rem + 0.25vw, 1.25rem);
+  --text-h4--line-height: 1.3;
+
+  --text-body-lg: clamp(1.05rem, 1rem + 0.2vw, 1.2rem);
+  --text-body-lg--line-height: 1.55;
+
+  /* Deliberately non-fluid, per accessibility best practice. */
+  --text-body: 1rem;
+  --text-body--line-height: 1.65;
+
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.65;
+
+  /* Legal fine print, badge text, TCPA consent copy. */
+  --text-micro: 0.75rem;
+  --text-micro--line-height: 1.5;
+
+  /* Eyebrow — Geist 700, 13px, uppercase (§4.3, B.8). */
+  --text-eyebrow: 0.8125rem;
+  --text-eyebrow--line-height: 1.2;
+
+  /* ======================================================================
+     C.6 — LINE-HEIGHT, TRACKING, MEASURE
+     ====================================================================== */
+
+  --leading-display: 1.05;
+  --leading-h1: 1.05;
+  --leading-h2: 1.15;
+  --leading-h3: 1.3;
+  --leading-body-lg: 1.55;
+  --leading-body: 1.65;
+
+  --tracking-eyebrow: 0.12em;
+  --tracking-tight: -0.02em;
+
+  /* ======================================================================
+     C.7 — SPACING
+     8px base unit. Exposed as named steps so `p-s8`, `gap-s4` resolve.
+     ====================================================================== */
+
+  --spacing-s1: 4px; /* icon-to-label gaps */
+  --spacing-s2: 8px; /* tight component spacing */
+  --spacing-s3: 16px; /* default gap — form fields, card internals, mobile gutter */
+  --spacing-s4: 24px; /* card padding, desktop grid gaps */
+  --spacing-s5: 32px; /* section-internal spacing */
+  --spacing-s6: 48px; /* sub-section spacing */
+  --spacing-s7: 64px; /* mobile section padding-block */
+  --spacing-s8: 96px; /* desktop section padding-block */
+  --spacing-s9: 128px; /* hero-scale spacing, major section breaks */
+
+  /* ======================================================================
+     C.10 — BREAKPOINTS, CANONICAL SET
+     Defined once. Appendix H references these by name and never restates a
+     pixel value. `lg` is the single desktop/mobile boundary for all chrome.
+     ====================================================================== */
+
+  --breakpoint-sm: 480px; /* small mobile — type and spacing refinements only */
+  --breakpoint-md: 768px; /* tablet — grid column count changes */
+  --breakpoint-lg: 1024px; /* small desktop — THE chrome boundary */
+  --breakpoint-xl: 1280px; /* full desktop — content reaches --container-max */
+  --breakpoint-2xl: 1536px; /* large desktop — whitespace only, no layout change */
+
+  /* ======================================================================
+     C.12 — SHADOW
+     Tinted with Apex Ink rather than neutral black: a pure-black shadow over
+     the warm off-white paper reads grey and muddy (§4.6a).
+     Never stack two shadow tokens on one element. Dark sections use no
+     shadows at all — elevation there is --apex-ink-2 surface lift.
+     ====================================================================== */
+
+  --shadow-xs: 0 1px 2px oklch(19% 0.03 255 / 0.06); /* inputs at rest, topbar divider */
+  --shadow-sm: 0 2px 6px oklch(19% 0.03 255 / 0.07); /* cards at rest, scrolled header */
+  --shadow-md: 0 6px 16px oklch(19% 0.03 255 / 0.1); /* card hover, with the 4px lift */
+  --shadow-lg: 0 16px 40px oklch(19% 0.03 255 / 0.14); /* hero quote card, mega-menu panel */
+  --shadow-bar: 0 -4px 20px oklch(19% 0.03 255 / 0.16); /* sticky bar — the system's ONLY upward-cast shadow */
+
+  /* ======================================================================
+     C.13 — RADIUS
+     Radius encodes hierarchy, not decoration: the larger the surface, the
+     larger the radius. Nested elements always take a radius one step below
+     their parent. Never equal, never larger.
+     ====================================================================== */
+
+  --radius-sm: 8px; /* tags, badges, pills, review service-type tags */
+  --radius-md: 10px; /* buttons, form inputs, selects */
+  --radius-lg: 14px; /* icon badges, small media thumbs */
+  --radius-xl: 16px; /* standard cards — service, review, process, project */
+  --radius-2xl: 20px; /* elevated cards — hero quote card, financing banner, footer CTA */
+  --radius-full: 999px; /* RESERVED: status dots and the topbar live indicator only */
+
+  /* ======================================================================
+     C.14 — MOTION
+     ====================================================================== */
+
+  --ease-brand: cubic-bezier(0.16, 1, 0.3, 1); /* hero load-in sequence */
+  --ease-out: cubic-bezier(0, 0, 0.2, 1); /* everything else */
+
+  --dur-button: 160ms; /* button hover — 1px lift, no scale transform */
+  --dur-menu: 180ms; /* mega-menu panel */
+  --dur-hover: 200ms; /* card hover — border invert, 4px lift, --shadow-md */
+  --dur-stickybar: 300ms; /* sticky bar slide-up, on mount only */
+  --dur-entrance: 400ms; /* above-threshold card entrance */
+  --dur-hero: 600ms; /* hero headline + subhead staggered reveal */
+  --dur-quotecard: 700ms; /* hero quote-card slide-in */
+  --dur-counter: 1400ms; /* stat count-up, once only */
+
+  --stagger-hero: 80ms; /* per word/line in the hero reveal */
+  --stagger-cards: 60ms; /* per card across a row, MAX FOUR staggered items */
+  --delay-quotecard: 150ms; /* delay after the headline before the card enters */
+
+  /* ======================================================================
+     C.11 — Z-INDEX
+     Exhaustive. No z-index outside this scale, no values above 100 (§4.4).
+     ====================================================================== */
+
+  --z-base: 0; /* page content */
+  --z-raised: 10; /* card hover lift, the floating stat badge (§5.7) */
+  --z-sticky-section: 20; /* sticky in-page elements */
+  --z-header: 50; /* topbar and sticky header */
+  --z-megamenu: 60; /* Services / Service Areas dropdown panels */
+  --z-nav-overlay: 70; /* mobile nav drawer and scrim */
+  --z-stickybar: 80; /* sticky call/quote bar — ABOVE the nav overlay by design */
+  --z-chat: 85; /* chat launcher (Phase 2, lg+ only) */
+  --z-modal: 90; /* any dialog; the focused skip link */
+  --z-toast: 100; /* transient notifications */
+
+  /* ======================================================================
+     C.6 (measure) — capped reading widths
+     ====================================================================== */
+
+  /* Without this the H1 runs the full 1152px content width at desktop and
+     reads as a banner rather than a headline. */
+  --measure-display: 24ch;
+  --measure-body: 68ch;
+}
+
+/* ==========================================================================
+   APPENDIX C LITERAL TOKEN NAMES
+   Every name as written in Appendix C, aliased to the namespaced token above.
+   Prose in Parts 0–9 refers to these; both forms resolve to one value.
+   ========================================================================== */
+
+:root {
+  /* C.1 brand */
+  --apex-ink: var(--color-apex-ink);
+  --apex-ink-2: var(--color-apex-ink-2);
+  --apex-paper: var(--color-apex-paper);
+  --apex-copper: var(--color-apex-copper);
+  --apex-copper-hover: var(--color-apex-copper-hover);
+  --apex-copper-dark: var(--color-apex-copper-dark);
+  --apex-sage: var(--color-apex-sage);
+  --apex-sage-tint: var(--color-apex-sage-tint);
+
+  /* C.2 neutral */
+  --n-950: var(--color-n-950);
+  --n-700: var(--color-n-700);
+  --n-400: var(--color-n-400);
+  --n-200: var(--color-n-200);
+  --n-100: var(--color-n-100);
+  --n-50: var(--color-n-50);
+
+  /* C.6 line-height */
+  --lh-display: var(--leading-display);
+  --lh-h1: var(--leading-h1);
+  --lh-h2: var(--leading-h2);
+  --lh-h3: var(--leading-h3);
+  --lh-body-lg: var(--leading-body-lg);
+  --lh-body: var(--leading-body);
+
+  /* C.7 spacing */
+  --s-1: var(--spacing-s1);
+  --s-2: var(--spacing-s2);
+  --s-3: var(--spacing-s3);
+  --s-4: var(--spacing-s4);
+  --s-5: var(--spacing-s5);
+  --s-6: var(--spacing-s6);
+  --s-7: var(--spacing-s7);
+  --s-8: var(--spacing-s8);
+  --s-9: var(--spacing-s9);
+
+  /* C.13 radius */
+  --r-sm: var(--radius-sm);
+  --r-md: var(--radius-md);
+  --r-lg: var(--radius-lg);
+  --r-xl: var(--radius-xl);
+  --r-2xl: var(--radius-2xl);
+  --r-full: var(--radius-full);
+
+  /* C.8 layout — declared here rather than in @theme because Tailwind's
+     --container-* namespace generates max-w-* utilities, and --container-max
+     would collide with the built-in `max-w-max` (max-content) utility. */
+  --container-max: 1280px;
+  --gutter-desktop: 24px;
+  --gutter-mobile: 16px;
+  --section-padding-inline: clamp(1.25rem, 5vw, 4rem);
+
+  /* C.9 component heights — the single source of truth for anchor offsets,
+     scroll-margin and mega-menu positioning. Required by the 2.4.11 Focus Not
+     Obscured rule (§6.2, I.3). These are viewport-dependent and therefore
+     cannot live inside @theme, whose values are static.
+
+     Base (below lg): topbar is not rendered, header is 64px, sticky bar is
+     present at 72px plus the iOS safe area. */
+  --header-h: 64px;
+  --topbar-h: 0px;
+  --stickybar-h: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (width >= 1024px) {
+  :root {
+    /* lg+ — topbar appears, header grows, and the sticky bar is not rendered
+       at all (H.1.4), so its height resolves to zero. This makes every
+       `+ var(--stickybar-h)` bottom-padding rule correct at both ends of the
+       breakpoint without a second media query. */
+    --header-h: 72px;
+    --topbar-h: 40px;
+    --stickybar-h: 0px;
+  }
+}
+
+/* ==========================================================================
+   BASE LAYER
+   Everything here uses :where() so it carries zero specificity and can never
+   cancel a component's own utilities — the section-padding collision this
+   kind of dense, section-based marketing page is prone to (§9.5 step 12).
+   ========================================================================== */
+
+@layer base {
+  :where(html) {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Web Interface Guidelines: theming and touch.
+
+     color-scheme tells the UA to render native controls, scrollbars and form
+     widgets against a light ground. The dark-mode token architecture ships
+     but no visible toggle does at v1 (C.0), so this is light for now and is
+     the one line that changes when the toggle lands.
+
+     touch-action: manipulation removes the ~300ms double-tap-to-zoom delay
+     browsers add to tappable elements. With 70-78% of this traffic on mobile
+     and the phone link as the primary conversion path (1.4), that delay is
+     felt on the single most important control on the site. Zoom itself is
+     untouched, so 1.4.4 Resize Text still holds. */
+  :where(html) {
+    color-scheme: light;
+  }
+
+  :where(a, button, summary, [role='button'], input[type='submit']) {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where(body) {
+    background-color: var(--color-apex-paper);
+    color: var(--color-n-950);
+    font-family: var(--font-inter);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Headings carry the display family and tracking by default; components
+     still set their own size from the C.5 scale. */
+  :where(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-geist);
+    font-weight: 800;
+    letter-spacing: var(--tracking-tight);
+    text-wrap: balance;
+  }
+
+  :where(h3, h4, h5, h6) {
+    font-weight: 700;
+    letter-spacing: normal;
+  }
+
+  :where(p) {
+    text-wrap: pretty;
+  }
+
+  /* I.3 — Focus.
+     Visible ring in --apex-copper, 3px, 3px offset, on EVERY interactive
+     element. Non-negotiable (§4.6).
+
+     2.4.11 Focus Not Obscured (AA): this design has sticky chrome on BOTH
+     edges — a sticky header and, below lg, a sticky bottom bar — which is the
+     single most common 2.2 failure on marketing sites. Every focusable
+     element declares scroll-margin-block so the browser's scroll-into-view
+     never parks a focused control underneath either one. */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible,
+  [tabindex]:focus-visible {
+    /* outline-color is set as a longhand rather than through the shorthand.
+       Tailwind's `transition-colors` utility lists outline-color among the
+       properties it transitions, and on elements carrying it the shorthand's
+       colour was resolving to currentColor instead of copper — which on the
+       transparent header over the ink hero produced a near-white ring. Setting
+       the longhand pins it.
+
+       This selector deliberately does NOT use :where(). Zero specificity is
+       the right default for the section-padding rules below, but a focus
+       indicator that any utility can silently outrank is a 2.4.7 failure, and
+       I.3 calls this non-negotiable. */
+    outline-width: 3px;
+    outline-style: solid;
+    outline-color: var(--color-apex-copper);
+    outline-offset: 3px;
+    scroll-margin-block: calc(var(--header-h) + 16px) calc(var(--stickybar-h) + 16px);
+  }
+
+  /* Anchor targets (#quote) clear the sticky header by the same measure. */
+  :where([id]) {
+    scroll-margin-block-start: calc(var(--header-h) + var(--topbar-h) + 16px);
+  }
+
+  /* I.8 — reduced motion. All entrance animation becomes an instant state
+     change; counters render their final value immediately (handled in JS).
+     Non-negotiable (§4.11). */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      transition-delay: 0ms !important;
+      animation-delay: 0ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ==========================================================================
+   UTILITIES
+   ========================================================================== */
+
+/* §4.3 — the ONLY route by which Roboto is applied. Never a raw font-family
+   declaration. Paired with tabular-nums so multi-row stat columns align. */
+@utility num {
+  font-family: var(--font-roboto);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: normal;
+}
+
+/* §4.3 — eyebrow treatment, defined once (B.8 enforces it). */
+@utility eyebrow {
+  font-family: var(--font-geist);
+  font-weight: 700;
+  font-size: var(--text-eyebrow);
+  line-height: 1.2;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+}
+
+/* C.6 measure caps. */
+@utility measure-body {
+  max-width: var(--measure-body);
+}
+
+@utility measure-display {
+  max-width: var(--measure-display);
+}
+
+/* B.9 — visually hidden, clipped rather than display:none so the element
+   stays in the tab order and in the accessibility tree. */
+@utility visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* B.9 — skip link. Clipped rather than display:none so it stays in the tab
+   order, and revealed above all chrome at --z-modal on focus. The reveal is
+   instantaneous by design — no transition. */
+@utility skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+
+  &:focus-visible {
+    position: fixed;
+    top: var(--s-3);
+    left: var(--s-3);
+    z-index: var(--z-modal);
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip-path: none;
+    padding: var(--s-3) var(--s-4);
+    border-radius: var(--r-md);
+    background-color: var(--color-apex-ink);
+    color: var(--color-apex-paper);
+    font-family: var(--font-geist);
+    font-weight: 700;
+    text-decoration: none;
+  }
+}
+
+/* G.4 — honeypot. Positioned off-screen via a class, NOT display:none, which
+   some bots detect and skip. */
+@utility hp-field {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* C.8 — the centred content container every <Section /> uses. */
+@utility container-max {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+}
+
+/* §4.11 — the hero load-in sequence.
+   Entrance motion is a PAGE-LOAD device, not a scroll device, so this is a
+   plain CSS animation with no observer and no client component. `both` fill
+   mode means the final state is what renders once the animation completes —
+   and under the reduced-motion rule above, effectively immediately. */
+@keyframes apex-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes apex-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+/* Headline and subhead: staggered reveal, --dur-hero, --ease-brand.
+   Per-line delay is applied inline as a multiple of --stagger-hero. */
+@utility hero-rise {
+  animation: apex-rise var(--dur-hero) var(--ease-brand) both;
+}
+
+/* The quote card slides in from the right after the headline, establishing a
+   headline-then-offer sequence (§4.11). */
+@utility hero-card {
+  animation: apex-slide-in var(--dur-quotecard) var(--ease-brand)
+    var(--delay-quotecard) both;
+}
+
+/* §4.11 — entrance animation. Applied ONLY to sections above the
+   MOTION_ENTRANCE_THRESHOLD; everything below renders statically and is never
+   observed. Elements start at their final state and the class is removed on
+   mount, so a JS failure leaves content visible rather than invisible. */
+@utility entrance-hidden {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+@utility entrance-ready {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--dur-entrance) var(--ease-out),
+    transform var(--dur-entrance) var(--ease-out);
+}

@@ -1,0 +1,48 @@
+{
+  "name": "apex-comfort-systems",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Apex Comfort Systems — Phoenix, AZ HVAC. Built to Blueprint v1.1.1 FINAL.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "npm run check:contrast && next build && npm run check:bundle",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "check:bundle": "node scripts/check-bundle.mjs",
+    "check:a11y": "node scripts/check-a11y.mjs",
+    "check:seo": "node scripts/check-seo.mjs",
+    "check:copy": "node scripts/check-copy.mjs",
+    "report:placeholders": "node scripts/placeholder-report.mjs",
+    "assets:logo": "node scripts/build-logo.mjs",
+    "assets:images": "node scripts/build-images.mjs",
+    "assets:fonts": "node scripts/build-fonts.mjs",
+    "check:emdash": "node scripts/check-emdash.mjs"
+  },
+  "dependencies": {
+    "libphonenumber-js": "1.13.10",
+    "lucide-react": "1.28.0",
+    "next": "16.2.12",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "resend": "6.18.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.2.12",
+    "jsdom": "^30.0.1",
+    "sharp": "0.35.3",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3"
+  },
+  "allowScripts": {
+    "sharp@0.34.5": true,
+    "sharp@0.35.3": true
+  }
+}

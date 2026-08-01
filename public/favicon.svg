@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- E.2 acceptance test: render at 16x16 in a browser tab beside four other
+       open tabs. If the mark reads as a grey blob rather than a distinct
+       shape, simplify further. -->
+  <style>
+    .mark { stroke: #0A1421; }
+    .ground { fill: #FAF8F4; }
+    @media (prefers-color-scheme: dark) {
+      .mark { stroke: #FAF8F4; }
+      .ground { fill: #0A1421; }
+    }
+  </style>
+  <rect class="ground" width="32" height="32"/>
+  <g class="mark" fill="none" stroke-width="4.5" stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M9 19 L19 6 L27 28"/>
+    <path d="M15 25.5 L4 29.2"/>
+  </g>
+</svg>
