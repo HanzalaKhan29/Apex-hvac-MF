@@ -74,10 +74,13 @@ export default function Hero({
     >
       {onInk ? (
         /* A very subtle radial highlight in --apex-copper-dark at low opacity.
-           It scales with the section, not with a fixed pixel offset (H.2.1). */
+           It scales with the section, not with a fixed pixel offset (H.2.1).
+           hero-drift (Appendix Z) gives it a 22s ambient position loop —
+           background-position only, compositor-friendly, suppressed under
+           prefers-reduced-motion by the global rule. */
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-[0.16] [background:radial-gradient(60%_55%_at_72%_18%,var(--color-apex-copper-dark),transparent_70%)]"
+          className="hero-drift pointer-events-none absolute inset-0 opacity-[0.16]"
         />
       ) : null}
 

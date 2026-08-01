@@ -606,6 +606,76 @@
     var(--delay-quotecard) both;
 }
 
+/* ==========================================================================
+   MOTION ADDITIONS — outside Appendix B, decided with the user (Appendix Z).
+   Both are compositor-only (transform/opacity/background-position), both
+   respect prefers-reduced-motion via the global rule above, and neither adds
+   a script tag or a JS animation library — J.4's "no animation library" rule
+   still holds. Restraint is the brief: §4.11 calls scroll-triggered fade-ups
+   on every section "the most reliable tell of a templated build", and these
+   two exist because they read as ambient texture, not as animation someone
+   is meant to consciously notice.
+   ========================================================================== */
+
+/* Hero background drift. §5.3 already places a static radial highlight in
+   --apex-copper-dark behind the hero copy; this animates its POSITION very
+   slowly so the glow breathes rather than sitting dead-still. 22s loop, ease
+   in/out, so no two consecutive seconds look alike but the motion is below
+   the threshold of conscious notice. Pure CSS — no observer, no listener.
+
+   A radial-gradient's `at <position>` clause is fixed at parse time and
+   cannot itself be animated. The gradient is therefore declared with its
+   default center origin, oversized via background-size so there is room to
+   pan, and background-position does the animating — the standard way to
+   move a radial gradient. */
+@utility hero-drift {
+  background-image: radial-gradient(
+    60% 55% at center,
+    var(--color-apex-copper-dark),
+    transparent 70%
+  );
+  background-size: 160% 160%;
+  background-position: 72% 18%;
+  animation: apex-hero-drift 22s ease-in-out infinite;
+}
+
+@keyframes apex-hero-drift {
+  0%,
+  100% {
+    background-position: 72% 18%;
+  }
+  50% {
+    background-position: 62% 28%;
+  }
+}
+
+/* Cursor spotlight. A soft radial glow in --apex-copper that trails the
+   pointer at 8-12% opacity — texture, not a UI element, so it carries no
+   semantics and is aria-hidden at the call site.
+   Restricted to devices that actually have a precise pointer: touch devices
+   report `hover: none`, and matching against that (rather than a viewport
+   width) is what correctly excludes touch-capable laptops with a mouse
+   attached, not just phones. Position is written to a custom property by
+   PointerSpotlight.tsx's rAF-batched, lerped listener, never by React state,
+   so a mouse moving does not re-render a single component. */
+@utility cursor-spotlight {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    480px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+    oklch(55% 0.13 48 / 0.1),
+    transparent 70%
+  );
+  transition: opacity 400ms ease-out;
+
+  @media (hover: hover) and (pointer: fine) {
+    opacity: 1;
+  }
+}
+
 /* §4.11 — entrance animation. Applied ONLY to sections above the
    MOTION_ENTRANCE_THRESHOLD; everything below renders statically and is never
    observed. Elements start at their final state and the class is removed on

@@ -516,3 +516,70 @@ numeric columns, `text-wrap: balance` on headings, `min-w-0` on flex text
 children, explicit image dimensions via `next/image`, `env(safe-area-inset-*)`
 on the sticky bar, semantic elements throughout, and `role="alert"` on async
 form errors.
+
+---
+
+## Z.18 — Motion additions and Supabase lead store
+
+Two things added beyond the blueprint, decided with the user after reviewing a
+10-item motion wishlist against §4.11's restraint rule. Four of the ten
+conflicted directly with the blueprint (scroll-reveal on every section against
+§4.11's own "most reliable tell of a templated build" line; button scale
+against "no scale transform"; a logo marquee against B.30's explicit ban;
+Framer Motion/GSAP/Lenis against J.4's "no animation library" and the ~220KB
+bundle ceiling). The user chose blueprint restraint over the wishlist; two
+items from it did not conflict and were added.
+
+**Cursor spotlight.** `components/PointerSpotlight.tsx` + `.cursor-spotlight`
+in `globals.css`. A soft `--apex-copper` radial glow trailing the pointer at
+10% opacity. Gated on `(hover: hover) and (pointer: fine)` in CSS and skipped
+before a listener even attaches in JS, so a touch device pays zero cost, not a
+hidden-but-computing one. Position is written straight to two CSS custom
+properties via a single `requestAnimationFrame` loop with the target lerped at
+0.12/frame — never through `setState`, which would re-render on every pointer
+event. Respects `prefers-reduced-motion`.
+
+**Hero background drift.** `.hero-drift` in `globals.css`. The existing §5.3
+radial highlight now pans slowly (22s loop) via `background-position` rather
+than sitting static. A `radial-gradient`'s `at <position>` clause is fixed at
+parse time and cannot itself be animated — the gradient is declared with its
+default center origin, oversized via `background-size: 160% 160%` for panning
+room, and `background-position` is what the keyframe actually moves.
+
+**Why these two specifically.** Neither carries content, both sit at or below
+the threshold of conscious notice, and neither needs a script tag beyond a
+single rAF loop already paying for itself in restraint. They read as ambient
+texture — the way film grain or a vignette would — not as "the page has an
+animation," which is the exact distinction §4.11 draws.
+
+**Not implemented, and why:** React's experimental `ViewTransition` API
+(canary-only feature bundled in Next's App Router) was considered for
+route-level page transitions. Declined for a client-facing $10-20K portfolio
+build where stability outweighs a page-transition flourish — an experimental
+flag is upside risk for the agency, not for the visitor.
+
+### Supabase — a persistent lead store, additive to G.3
+
+The blueprint's transport is fully specified: Server Action → Resend →
+dispatch inbox (G.3), no database. `supabase/schema.sql`, `lib/supabase.ts`
+and a `recordLead()` call in `submit-lead.ts` add a **queryable copy**
+alongside that transport, never instead of it.
+
+- Fires **after** the Resend email has already succeeded, and is never
+  `await`-ed into the failure path — a Supabase outage must not turn into a
+  G.2 "we couldn't send that" for a lead the dispatch inbox already has.
+- `recordLead()` never throws. Unconfigured (`SUPABASE_URL` /
+  `SUPABASE_SERVICE_ROLE_KEY` unset) is a silent no-op, not a startup error.
+- RLS is enabled on `leads` with **no policies** — only the service-role key
+  can touch the table, and that key is loaded through `server-only`, which
+  makes importing it from a Client Component a build error.
+- The actual Supabase project was not created — no CLI, no account access,
+  and creating accounts on the user's behalf is out of scope regardless. The
+  user runs `supabase/schema.sql` once in a new project's SQL editor and adds
+  the two env vars; everything else is already wired.
+
+### Vercel
+
+Linked to the `metric-front` team as `apex-comfort-systems` via the CLI,
+which was already authenticated in this environment. Deployed as a
+**preview**, not production, per the deploy skill's default.

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import parsePhoneNumberFromString from 'libphonenumber-js';
 import { SERVICE_SLUGS } from '@/lib/services';
 import { FORM_MESSAGES } from '@/lib/form-messages';
+import { recordLead } from '@/lib/supabase';
 
 /**
  * Appendix G — the Server Action.
@@ -310,6 +311,26 @@ export async function submitLead(
       values: echoValues(formData),
     };
   }
+
+  /*
+   * ADDITION beyond the blueprint (Z.18): a persistent, queryable copy in
+   * Supabase alongside the Resend email above. Fired AFTER the email send has
+   * already succeeded, and never awaited into the failure path — a Supabase
+   * outage must not turn into a G.2 "we couldn't send that" for a lead the
+   * dispatch inbox already received. recordLead() never throws; this is
+   * belt-and-suspenders, not a second point of failure.
+   */
+  void recordLead({
+    form_type: data.formType,
+    form_location: String(formData.get('formLocation') ?? 'unknown'),
+    name: data.name,
+    phone: data.phone,
+    service: data.formType === 'quote' ? data.service : undefined,
+    zip: data.formType === 'quote' ? data.zip : undefined,
+    out_of_area: outOfArea,
+    best_time: data.formType === 'callback' ? data.bestTime : undefined,
+    message: data.formType === 'callback' ? data.message : undefined,
+  });
 
   /*
    * G.7 — the thank-you page states "a dispatcher will call you at [masked

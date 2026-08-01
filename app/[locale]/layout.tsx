@@ -3,6 +3,7 @@ import HeaderSlot from '@/components/HeaderSlot';
 import SiteFooter from '@/components/SiteFooter';
 import StickyBarSlot from '@/components/StickyBarSlot';
 import Analytics from '@/components/Analytics';
+import PointerSpotlight from '@/components/PointerSpotlight';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import WebVitals from '@/components/WebVitals';
 import EntranceMotion from '@/components/EntranceMotion';
@@ -51,6 +52,7 @@ export default function LocaleLayout({ children }: { children: React.ReactNode }
   return (
     <>
       <SkipLink />
+      <PointerSpotlight />
       <HeaderSlot services={SERVICE_NAV} cities={CITY_NAV} />
 
       {/* tabindex="-1" so the skip link's focus actually lands (B.9, I.2). */}

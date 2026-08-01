@@ -3,6 +3,7 @@ import HeaderSlot from '@/components/HeaderSlot';
 import SiteFooter from '@/components/SiteFooter';
 import StickyBarSlot from '@/components/StickyBarSlot';
 import Analytics from '@/components/Analytics';
+import PointerSpotlight from '@/components/PointerSpotlight';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import WebVitals from '@/components/WebVitals';
 import NotFoundTemplate from '@/components/templates/NotFoundTemplate';
@@ -47,6 +48,7 @@ export default function RootNotFound() {
   return (
     <>
       <SkipLink />
+      <PointerSpotlight />
       <HeaderSlot services={SERVICE_NAV} cities={CITY_NAV} />
 
       <main id="main" tabIndex={-1}>
