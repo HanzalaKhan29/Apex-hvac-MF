@@ -33,6 +33,7 @@ export interface Prefill {
   name?: string;
   phone?: string;
   zip?: string;
+  email?: string;
 }
 
 /* A minimal store around sessionStorage. The `storage` event only fires in
@@ -82,6 +83,7 @@ export function useSessionPrefill() {
         name: values.name?.trim() || undefined,
         phone: values.phone?.trim() || undefined,
         zip: values.zip?.trim() || undefined,
+        email: values.email?.trim() || undefined,
       };
       sessionStorage.setItem(KEY, JSON.stringify(next));
       emit();

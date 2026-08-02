@@ -14,9 +14,10 @@ import { createClient } from '@supabase/supabase-js';
  * RLS with no policies, so only this key can read or write `leads`. It is
  * never exposed with a NEXT_PUBLIC_ prefix and is read once at module scope.
  *
- * Returns null when unconfigured rather than throwing, so a missing Supabase
- * project degrades to "no persistent copy" instead of breaking the lead
- * pipeline — the Resend email is still the thing that must never fail.
+ * `createAdminClient()` still returns null when unconfigured, but as of Z.26
+ * the CLIENT being unconfigured is no longer a silent no-op at the call site
+ * in production — see `recordLead()` below. The database write is now the
+ * step the pipeline requires; the emails are the ones allowed to fail.
  */
 function createAdminClient() {
   const url = process.env.SUPABASE_URL;
@@ -35,6 +36,7 @@ export interface LeadRow {
   form_location: string;
   name: string;
   phone: string;
+  email?: string;
   service?: string;
   zip?: string;
   out_of_area: boolean;
@@ -43,15 +45,28 @@ export interface LeadRow {
 }
 
 /**
- * Best-effort insert. Never throws — a Supabase outage must not touch the
- * G.3 pipeline, whose contract is "the Resend email is the thing that must
- * never fail." Logged, not surfaced, on failure.
+ * Z.26 — owner-specified pipeline order reverses G.3's original contract:
+ * "agar email fail ho jaye to bhi lead database mein save honi chahiye. Aur
+ * agar database save fail ho, to email bhi send na ho" — the database write
+ * is now the step that must succeed; the emails are the best-effort ones.
+ *
+ * THROWS on failure (unlike the original best-effort version) so
+ * submitLead() can gate the rest of the pipeline on it. In development with
+ * no Supabase project configured, this still resolves (logs and returns) so
+ * local form testing doesn't require a live project — mirrors how
+ * sendToDispatch() already treats missing Resend config.
  */
 export async function recordLead(row: LeadRow): Promise<void> {
-  if (!supabaseAdmin) return;
+  if (!supabaseAdmin) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Supabase is not configured.');
+    }
+    console.info('[supabase] not configured; lead not persisted:', row);
+    return;
+  }
 
   const { error } = await supabaseAdmin.from('leads').insert(row);
   if (error) {
-    console.error('[supabase] failed to record lead (non-fatal):', error.message);
+    throw new Error(`Supabase insert failed: ${error.message}`);
   }
 }

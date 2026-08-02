@@ -103,6 +103,7 @@ export default function CallbackForm({ formLocation }: CallbackFormProps) {
         remember({
           name: String(data.get('name') ?? ''),
           phone: String(data.get('phone') ?? ''),
+          email: String(data.get('email') ?? ''),
         });
       }}
       className="flex flex-col gap-s3"
@@ -153,6 +154,19 @@ export default function CallbackForm({ formLocation }: CallbackFormProps) {
           error={errors.bestTime}
         />
       </div>
+
+      {/* Owner-requested (Z.26): optional email, so a confirmation can be
+          sent. Not part of B.12's required set. */}
+      <FormField
+        kind="email"
+        name="email"
+        label="Email (optional)"
+        readOnly={pending}
+        autoComplete="email"
+        spellCheck={false}
+        defaultValue={initial('email', prefill.email)}
+        error={errors.email}
+      />
 
       {hasPrefill ? (
         <button

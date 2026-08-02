@@ -29,6 +29,7 @@ create table if not exists public.leads (
   -- callback-only.
   name text not null,
   phone text not null,           -- E.164, matches lib/contact.ts's format
+  email text,                    -- Z.26: optional, only for the confirmation email
   service text,
   zip text,
   out_of_area boolean not null default false,  -- G.1: tagged, never blocked

@@ -20,7 +20,7 @@ import { ChevronDown, CircleAlert } from 'lucide-react';
  *     dropdowns — no custom listbox (§6.1 item 3).
  */
 
-export type FieldKind = 'text' | 'tel' | 'select' | 'textarea';
+export type FieldKind = 'text' | 'tel' | 'email' | 'select' | 'textarea';
 
 export interface FormFieldProps {
   kind: FieldKind;
@@ -132,7 +132,7 @@ export default function FormField({
       ) : (
         <input
           {...shared}
-          type={kind === 'tel' ? 'tel' : 'text'}
+          type={kind === 'tel' ? 'tel' : kind === 'email' ? 'email' : 'text'}
           inputMode={inputMode}
           maxLength={maxLength}
           className={controlClass}

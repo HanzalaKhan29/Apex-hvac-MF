@@ -135,6 +135,7 @@ export default function QuoteCard({
             name: String(data.get('name') ?? ''),
             phone: String(data.get('phone') ?? ''),
             zip: String(data.get('zip') ?? ''),
+            email: String(data.get('email') ?? ''),
           });
         }}
         className="mt-s4 flex flex-col gap-s3"
@@ -207,6 +208,24 @@ export default function QuoteCard({
           spellCheck={false}
           defaultValue={initial('phone', prefill.phone)}
           error={errors.phone}
+        />
+
+        {/*
+         * Owner-requested addition (Z.26): OPTIONAL email, purely so a
+         * customer confirmation can be sent. Not required — B.11's locked
+         * four-field count stays the mandatory set; this is an opt-in fifth
+         * field, which is a materially smaller conversion cost than a
+         * required one.
+         */}
+        <FormField
+          kind="email"
+          name="email"
+          label="Email (optional)"
+          readOnly={pending}
+          autoComplete="email"
+          spellCheck={false}
+          defaultValue={initial('email', prefill.email)}
+          error={errors.email}
         />
 
         {hasPrefill ? (

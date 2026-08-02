@@ -6,6 +6,7 @@ import parsePhoneNumberFromString from 'libphonenumber-js';
 import { SERVICE_SLUGS } from '@/lib/services';
 import { FORM_MESSAGES } from '@/lib/form-messages';
 import { recordLead } from '@/lib/supabase';
+import { businessNotificationHtml, customerConfirmationHtml } from '@/lib/email-templates';
 
 /**
  * Appendix G — the Server Action.
@@ -18,10 +19,16 @@ import { recordLead } from '@/lib/supabase';
  * FIELD COUNT IS LOCKED (§3.4). The quote form stays at exactly four fields.
  * Do not expand it — every additional field costs roughly 10% of submissions.
  *
- * TRANSPORT (G.3): Server Action → transactional email (Resend) → dispatch
- * inbox. The action returns a typed result; NO CLIENT-SIDE API KEYS, ever.
- * On success it redirects to /thank-you?service=<slug>, which is the only
- * pattern that gives GA4 and Google Ads a real destination conversion.
+ * TRANSPORT (G.3, reordered by Z.26): Server Action → Supabase (`leads`) →
+ * business notification email → customer confirmation email (only if an
+ * email was given) → /thank-you redirect. NO CLIENT-SIDE API KEYS, ever.
+ *
+ * Z.26 flips G.3's original priority on owner instruction: "email fail ho to
+ * bhi DB save honi chahiye, DB fail ho to email na jaye." The database write
+ * is now the step the pipeline requires — it runs first and its failure is
+ * what returns G.2's submission error. Both emails are best-effort after
+ * that: each is wrapped in its own try/catch, logs on failure, and never
+ * turns into a user-facing error once the lead is safely in the database.
  */
 
 /* -------------------------------------------------------------------------
@@ -57,6 +64,20 @@ const zipSchema = z
   .trim()
   .regex(/^\d{5}$/, 'Enter a 5-digit ZIP code.');
 
+/**
+ * Z.26 — OPTIONAL. Empty string transforms to undefined rather than failing
+ * validation, since the field itself is optional on both forms.
+ */
+const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .transform((v) => (v.length ? v : undefined))
+  .refine((v) => v === undefined || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), {
+    message: 'Enter a valid email address.',
+  })
+  .optional();
+
 const messageSchema = z
   .string()
   .trim()
@@ -69,6 +90,7 @@ const quoteSchema = z.object({
   service: z.enum(SERVICE_SLUGS),
   name: nameSchema,
   phone: phoneSchema,
+  email: emailSchema,
   zip: zipSchema,
 });
 
@@ -76,6 +98,7 @@ const callbackSchema = z.object({
   formType: z.literal('callback'),
   name: nameSchema,
   phone: phoneSchema,
+  email: emailSchema,
   bestTime: z.enum(['morning', 'afternoon', 'evening', 'any']),
   message: messageSchema,
 });
@@ -140,36 +163,69 @@ async function verifyTurnstile(token: string | undefined, ip: string): Promise<b
    Transport
    ------------------------------------------------------------------------- */
 
-async function sendToDispatch(lead: Record<string, string | boolean>) {
+/**
+ * Z.26 — best-effort by design. Never throws: a Resend outage or missing
+ * config must not turn a lead that already saved to Supabase into a G.2
+ * error for the customer. Logged, not surfaced.
+ */
+async function sendBusinessNotification(
+  lead: Parameters<typeof businessNotificationHtml>[0]
+): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.DISPATCH_INBOX;
 
   if (!apiKey || !to) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('Transactional email is not configured.');
-    }
-    // Local development: the pipeline is exercised without a live provider.
-    console.info('[submit-lead] dispatch email not configured; lead:', lead);
+    console.info('[submit-lead] business notification not configured; lead saved regardless:', lead);
     return;
   }
 
-  const { Resend } = await import('resend');
-  const resend = new Resend(apiKey);
+  try {
+    const { Resend } = await import('resend');
+    const resend = new Resend(apiKey);
+    const subject = lead.outOfArea
+      ? `[OUT OF AREA] New lead: ${lead.name}`
+      : `New lead: ${lead.name}`;
 
-  const rows = Object.entries(lead)
-    .map(([key, value]) => `${key}: ${String(value)}`)
-    .join('\n');
+    await resend.emails.send({
+      // No verified sending domain yet (Z.26) — Resend's own test sender,
+      // which only delivers to the Resend account owner's address, until
+      // apexcomfortsystems.com is verified. Swap DISPATCH_FROM once it is.
+      from: process.env.DISPATCH_FROM ?? 'Apex Comfort Systems <onboarding@resend.dev>',
+      to,
+      subject,
+      html: businessNotificationHtml(lead),
+    });
+  } catch (error) {
+    console.error(
+      '[submit-lead] business notification failed (non-fatal, lead already saved):',
+      error instanceof Error ? error.message : error
+    );
+  }
+}
 
-  const subject = lead.outOfArea
-    ? `[OUT OF AREA] New lead: ${lead.name}`
-    : `New lead: ${lead.name}`;
+/** Best-effort, and only attempted when the customer gave an email. */
+async function sendCustomerConfirmation(name: string, email: string): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.info('[submit-lead] customer confirmation not configured; skipped for', email);
+    return;
+  }
 
-  await resend.emails.send({
-    from: process.env.DISPATCH_FROM ?? 'leads@apexcomfortsystems.com',
-    to,
-    subject,
-    text: rows,
-  });
+  try {
+    const { Resend } = await import('resend');
+    const resend = new Resend(apiKey);
+    await resend.emails.send({
+      from: process.env.DISPATCH_FROM ?? 'Apex Comfort Systems <onboarding@resend.dev>',
+      to: email,
+      subject: 'We got your request: Apex Comfort Systems',
+      html: customerConfirmationHtml({ name }),
+    });
+  } catch (error) {
+    console.error(
+      '[submit-lead] customer confirmation failed (non-fatal):',
+      error instanceof Error ? error.message : error
+    );
+  }
 }
 
 /* -------------------------------------------------------------------------
@@ -289,13 +345,26 @@ export async function submitLead(
   const data = parsed.data;
   const zip = data.formType === 'quote' ? data.zip : undefined;
   const outOfArea = isOutOfArea(zip);
+  const formLocation = String(formData.get('formLocation') ?? 'unknown');
 
+  /*
+   * Z.26 — Supabase is now the step that must succeed (owner instruction:
+   * "database save fail ho to email bhi send na ho"). Runs first and
+   * blocking; its failure is what returns G.2's submission error, exactly
+   * where the old Resend-throw branch used to sit.
+   */
   try {
-    await sendToDispatch({
-      ...data,
-      outOfArea,
-      formLocation: String(formData.get('formLocation') ?? 'unknown'),
-      submittedAt: new Date().toISOString(),
+    await recordLead({
+      form_type: data.formType,
+      form_location: formLocation,
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+      service: data.formType === 'quote' ? data.service : undefined,
+      zip: data.formType === 'quote' ? data.zip : undefined,
+      out_of_area: outOfArea,
+      best_time: data.formType === 'callback' ? data.bestTime : undefined,
+      message: data.formType === 'callback' ? data.message : undefined,
     });
   } catch {
     /*
@@ -306,31 +375,32 @@ export async function submitLead(
     return {
       ok: false,
       error: FORM_MESSAGES.transport,
-      // Transport failure is the likeliest real-world failure of the four, so
-      // this is the branch where losing the user's typing hurts most (G.2).
       values: echoValues(formData),
     };
   }
 
   /*
-   * ADDITION beyond the blueprint (Z.18): a persistent, queryable copy in
-   * Supabase alongside the Resend email above. Fired AFTER the email send has
-   * already succeeded, and never awaited into the failure path — a Supabase
-   * outage must not turn into a G.2 "we couldn't send that" for a lead the
-   * dispatch inbox already received. recordLead() never throws; this is
-   * belt-and-suspenders, not a second point of failure.
+   * Both emails are best-effort from here (Z.26): "email fail ho jaye to bhi
+   * lead database mein save honi chahiye" — it already is, so neither of
+   * these can turn into a user-facing failure. Each catches its own errors
+   * internally; awaited so the redirect below reflects real completion, not
+   * fire-and-forget.
    */
-  void recordLead({
-    form_type: data.formType,
-    form_location: String(formData.get('formLocation') ?? 'unknown'),
+  await sendBusinessNotification({
+    formType: data.formType,
     name: data.name,
     phone: data.phone,
+    email: data.email,
     service: data.formType === 'quote' ? data.service : undefined,
     zip: data.formType === 'quote' ? data.zip : undefined,
-    out_of_area: outOfArea,
-    best_time: data.formType === 'callback' ? data.bestTime : undefined,
+    outOfArea,
+    bestTime: data.formType === 'callback' ? data.bestTime : undefined,
     message: data.formType === 'callback' ? data.message : undefined,
   });
+
+  if (data.email) {
+    await sendCustomerConfirmation(data.name, data.email);
+  }
 
   /*
    * G.7 — the thank-you page states "a dispatcher will call you at [masked
