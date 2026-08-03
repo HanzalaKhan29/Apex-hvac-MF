@@ -49,7 +49,7 @@ export default function FeatureRow({
   const inner = (
     <>
       <span
-        className={`inline-flex size-12 shrink-0 items-center justify-center rounded-lg ${badgeTone} transition-colors duration-[var(--dur-hover)] ease-out group-hover:bg-apex-copper`}
+        className={`inline-flex size-12 shrink-0 items-center justify-center rounded-lg ${badgeTone} transition-[background-color,rotate] duration-[var(--dur-hover)] ease-out group-hover:rotate-3 group-hover:bg-apex-copper`}
       >
         <Icon
           aria-hidden="true"
@@ -74,5 +74,9 @@ export default function FeatureRow({
     );
   }
 
-  return <li className="group flex items-start gap-s3">{inner}</li>;
+  // No `group`: without an href this row has nothing to click, so the icon
+  // shouldn't invert on hover and imply otherwise (it did before this fix —
+  // `group` was applied unconditionally, so hovering a purely informational
+  // row still fired the link-style icon invert).
+  return <li className="flex items-start gap-s3">{inner}</li>;
 }

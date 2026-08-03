@@ -257,7 +257,7 @@ export default function QuoteCard({
           <button
             type="submit"
             aria-busy={pending || undefined}
-            className="order-1 inline-flex min-h-14 w-full items-center justify-center rounded-md bg-apex-copper px-s4 font-geist font-bold text-white transition-colors duration-[var(--dur-button)] ease-out hover:bg-apex-copper-hover"
+            className="order-1 inline-flex min-h-14 w-full items-center justify-center rounded-md bg-apex-copper px-s4 font-geist font-bold text-white transition-[background-color,translate] duration-[var(--dur-button)] ease-out hover:-translate-y-0.5 hover:bg-apex-copper-hover"
           >
             {pending ? 'Sending…' : 'Get Your Flat-Rate Quote'}
           </button>

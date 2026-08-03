@@ -97,7 +97,7 @@ export default function MobileNavDrawer({
 
   const section = (label: string, items: readonly MegaMenuItem[], viewAll: MegaMenuItem) => (
     <details name="apex-drawer" className="border-b border-n-200">
-      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between py-s3 font-geist font-bold [&::-webkit-details-marker]:hidden">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between py-s3 font-geist font-bold transition-colors duration-[var(--dur-button)] ease-out [&::-webkit-details-marker]:hidden hover:text-[var(--accent)]">
         {label}
         <ChevronDown aria-hidden="true" strokeWidth={2} className="size-5" />
       </summary>

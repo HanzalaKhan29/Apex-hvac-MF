@@ -827,3 +827,76 @@ now show two different marks. Flagged rather than left silently
 inconsistent — updating them needs either re-running that script against
 traced vector geometry of the new artwork, or a decision to serve the new
 PNG in those contexts too.
+
+## Z.29 — sitewide hover-motion consistency pass
+
+Owner-requested premium hover treatment (lift + subtle scale + shadow,
+Stripe/Linear-style) across every genuinely interactive surface. Declined
+`motion-framer`/`animejs`/`scroll-reveal-libraries` for this — everything
+asked for (scale, translate, shadow, ~280ms ease-out) is plain CSS
+`transition`/`transform`, which the codebase already used in three different
+hand-rolled forms (`ServiceCard`, `ReviewCard`, `LogoStrip`); this pass makes
+them consistent rather than adding a fourth pattern via a library. Zero
+bundle cost, and `prefers-reduced-motion` compliance is automatic — the I.8
+global rule already zeroes every `transition-duration` on the page, so
+nothing extra was needed for any of this.
+
+`--dur-hover` (card hover) 200ms → 280ms; `--dur-button` (button hover)
+160ms → 180ms — both now sit inside the requested 250–350/150–350ms window
+and every existing consumer of these tokens picked up the change for free.
+
+- `ServiceCard.tsx` — added `scale-[1.02]` alongside the existing 4px lift
+  (now 6px, `-translate-y-1.5`); icon badge gets `rotate-3` on hover/focus.
+- `ReviewCard.tsx` (the static-grid `<figure>`, shared by `ReviewsSection`
+  and the `/reviews` marquee) — same scale+lift addition. `ReviewsMarquee.tsx`
+  had its own `hover:scale-[1.02]` on the wrapper `<li>` from when the figure
+  had no hover of its own; left in place it would have double-stacked
+  (scale × scale) with the figure's own new hover — stripped to just the
+  focus-visible ring, which is the only thing that was actually unique to
+  the marquee context.
+- `ProjectCard.tsx` — was shadow-only (no lift) at the card level, only the
+  inner image zoomed on hover. Added the missing 6px lift to the `<figure>`;
+  left the image's own zoom as-is (it already reads as the "subtle parallax"
+  the brief asked for, doubling up scale on both card and image would be the
+  "exaggerated" effect the brief explicitly said to avoid).
+- `Button.tsx` — lift 1px → 2px. No scale added (the existing "no scale
+  transform" rule at line 69 is a deliberate prior restraint decision, not
+  an oversight) — the background-color swap to each variant's `-hover` token
+  (`copper-hover`, `ink-2`, `white/10`, `n-100`) already reads as "brighten,"
+  so no separate `brightness()` filter was layered on.
+- `QuoteCard.tsx` / `CallbackForm.tsx` submit buttons — these are raw
+  `<button>`s duplicating `Button.tsx`'s primary-variant color but not its
+  lift. Added the matching 2px lift for consistency.
+- `FAQAccordion.tsx` / `MobileNavDrawer.tsx` accordion `<summary>` rows —
+  had zero hover feedback despite being clickable (every other interactive
+  row in the system — nav links, footer links, mega-menu items — has one).
+  Added a text-color shift to `--accent` on hover, no lift/shadow (these are
+  borderless list rows, not cards — a lift would look out of place).
+- `FeatureRow.tsx` — **real bug found and fixed while auditing this**, not
+  a style gap: the non-link render branch (`return <li className="group
+  flex...">`) carried the `group` class unconditionally, so a purely
+  informational row (no `href`) still fired the link-style icon-invert
+  on hover — implying the row was clickable when it wasn't. `group` is now
+  only present on the branch that actually renders a `<Link>`. The link
+  branch additionally gets `rotate-3` on its icon badge, matching
+  `ServiceCard`.
+
+**Deliberately not touched:** `Hero.tsx`, `WhyApexSection.tsx`, and the
+`/about` team photo — none of these images sit inside a link or button.
+Adding a hover-zoom to a purely decorative image would imply an action that
+doesn't exist, which is a worse UX than no motion at all; "images" in the
+brief is read here as "images that are part of something clickable"
+(`ProjectCard`'s, which already had it). Same reasoning for `StatBlock` and
+`ProcessStep` — neither is interactive, so neither gained a hover state.
+
+Verified via the compiled stylesheet (`document.styleSheets`), not just by
+reading the JSX: confirmed `group-hover:scale-[1.02]`,
+`group-hover:-translate-y-1.5`, `group-hover:rotate-3`,
+`hover:-translate-y-0.5` and the FAQ's `group-hover/row:text-` selectors all
+exist as real compiled CSS rules, not silently dropped by an invalid
+arbitrary-value string. `check:bundle` unaffected (208.2KB shared, unchanged
+— everything here is CSS). Mobile swept for regressions across `/`,
+`/services`, `/reviews`, `/about`, `/projects`, `/faq`, `/contact` at 375px:
+no horizontal overflow on any of them, and the `/reviews` marquee (Z.29's
+neighbor, Z.26/Z.27's era) renders one full-width column instead of the
+three-cramped-into-335px state from before that fix.

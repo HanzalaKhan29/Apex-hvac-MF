@@ -52,9 +52,10 @@ export default function ServiceCard({
           'rounded-xl border border-n-200 bg-white',
           // Shadow ACCOMPANIES the 1px border, it does not replace it (§4.7).
           'shadow-sm group-hover:shadow-md group-focus-within:shadow-md',
-          // 4px lift on hover — the signature interaction.
-          'transition-[translate,box-shadow] duration-[var(--dur-hover)] ease-out',
-          'group-hover:-translate-y-1 group-focus-within:-translate-y-1',
+          // 6px lift + a hair of scale on hover — the signature interaction.
+          'transition-[translate,scale,box-shadow] duration-[var(--dur-hover)] ease-out',
+          'group-hover:-translate-y-1.5 group-hover:scale-[1.02]',
+          'group-focus-within:-translate-y-1.5 group-focus-within:scale-[1.02]',
           'overflow-hidden',
           compact ? 'p-s4' : 'p-s4 md:px-[28px] md:py-s5',
         ].join(' ')}
@@ -76,8 +77,9 @@ export default function ServiceCard({
           <span
             className={[
               'mb-s4 inline-flex size-12 items-center justify-center rounded-lg bg-n-100',
-              'transition-colors duration-[var(--dur-hover)] ease-out',
+              'transition-[background-color,rotate] duration-[var(--dur-hover)] ease-out',
               'group-hover:bg-apex-copper group-focus-within:bg-apex-copper',
+              'group-hover:rotate-3 group-focus-within:rotate-3',
             ].join(' ')}
           >
             <Icon

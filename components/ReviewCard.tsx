@@ -66,7 +66,7 @@ export default function ReviewCard({
        * user gets, matching <ServiceCard />'s pattern (§6.1 item 5). CSS-only,
        * no animation library — J.4.
        */}
-      <figure className="group flex w-full flex-col rounded-xl border border-n-200 bg-white p-s4 shadow-sm transition-[box-shadow,translate] duration-[var(--dur-hover)] ease-out hover:-translate-y-1 hover:shadow-md focus-within:-translate-y-1 focus-within:shadow-md md:p-s5">
+      <figure className="group flex w-full flex-col rounded-xl border border-n-200 bg-white p-s4 shadow-sm transition-[box-shadow,translate,scale] duration-[var(--dur-hover)] ease-out hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-md focus-within:-translate-y-1.5 focus-within:scale-[1.02] focus-within:shadow-md md:p-s5">
         {/* Category tag — a pill at --r-sm, one step below the card's --r-xl. */}
         <div className="flex items-center justify-between gap-s3">
           <span className="inline-flex rounded-sm bg-n-100 px-s2 py-s1 text-micro font-semibold text-n-700">

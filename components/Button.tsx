@@ -66,10 +66,12 @@ export default function Button({
   const classes = [
     'inline-flex items-center justify-center gap-s2 text-center',
     'font-geist font-bold text-body rounded-md',
-    // 1px lift plus background shift. NO SCALE TRANSFORM — restrained, no
-    // bouncy effects (§4.11, B.14).
+    // 2px lift plus the background-color swap to each variant's `-hover`
+    // token already IS the "brighten" — copper-hover/ink-2 are lighter than
+    // their resting shade, so no separate brightness filter is layered on
+    // top. NO SCALE TRANSFORM — restrained, no bouncy effects (§4.11, B.14).
     'transition-[background-color,translate,border-color] duration-[var(--dur-button)] ease-out',
-    'hover:-translate-y-px',
+    'hover:-translate-y-0.5',
     'disabled:opacity-60 disabled:pointer-events-none',
     VARIANT[variant],
     SIZE[size],

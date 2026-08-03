@@ -69,8 +69,10 @@ export default function FAQAccordion({
             key={item.question}
             className="group border-b border-n-200 [&[open]_.faq-icon]:rotate-45"
           >
-            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-s3 py-s3 [&::-webkit-details-marker]:hidden">
-              <h3 className="text-h4 text-apex-ink">{item.question}</h3>
+            <summary className="group/row flex min-h-11 cursor-pointer list-none items-center justify-between gap-s3 py-s3 [&::-webkit-details-marker]:hidden">
+              <h3 className="text-h4 text-apex-ink transition-colors duration-[var(--dur-button)] ease-out group-hover/row:text-[var(--accent)]">
+                {item.question}
+              </h3>
               <Plus
                 aria-hidden="true"
                 strokeWidth={2}

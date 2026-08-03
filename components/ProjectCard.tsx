@@ -38,7 +38,7 @@ export default function ProjectCard({
 }: ProjectCardProps) {
   return (
     <li className={wide ? 'lg:col-span-2' : undefined}>
-      <figure className="group h-full overflow-hidden rounded-xl border border-n-200 bg-white shadow-sm transition-shadow duration-[var(--dur-hover)] ease-out hover:shadow-md">
+      <figure className="group h-full overflow-hidden rounded-xl border border-n-200 bg-white shadow-sm transition-[box-shadow,translate] duration-[var(--dur-hover)] ease-out hover:-translate-y-1.5 hover:shadow-md">
         <div
           className={[
             'relative overflow-hidden',

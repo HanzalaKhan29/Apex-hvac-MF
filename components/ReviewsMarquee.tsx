@@ -69,7 +69,12 @@ function Column({
               mode={mode}
               tabIndex={pass === 1 ? -1 : 0}
               ariaHidden={pass === 1}
-              className="transition-transform duration-[var(--dur-hover)] ease-out hover:scale-[1.02] focus-visible:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-apex-copper"
+              // Scale/lift now lives on <ReviewCard />'s own <figure> (shared
+              // with the static-grid usage) — this className only adds what's
+              // unique to the marquee: the focus-visible ring, since the
+              // li's hover:scale-[1.02] would otherwise double-stack with
+              // the figure's own hover:scale-[1.02] on top of it.
+              className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-apex-copper"
             />
           ))
         )}

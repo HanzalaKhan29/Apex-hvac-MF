@@ -236,9 +236,9 @@
   --ease-brand: cubic-bezier(0.16, 1, 0.3, 1); /* hero load-in sequence */
   --ease-out: cubic-bezier(0, 0, 0.2, 1); /* everything else */
 
-  --dur-button: 160ms; /* button hover — 1px lift, no scale transform */
+  --dur-button: 180ms; /* button hover — 2px lift + slight brighten, no scale transform */
   --dur-menu: 180ms; /* mega-menu panel */
-  --dur-hover: 200ms; /* card hover — border invert, 4px lift, --shadow-md */
+  --dur-hover: 280ms; /* card hover — border invert, 6px lift, scale 1.02, --shadow-md */
   --dur-stickybar: 300ms; /* sticky bar slide-up, on mount only */
   --dur-entrance: 400ms; /* above-threshold card entrance */
   --dur-hero: 600ms; /* hero headline + subhead staggered reveal */
