@@ -900,3 +900,26 @@ arbitrary-value string. `check:bundle` unaffected (208.2KB shared, unchanged
 no horizontal overflow on any of them, and the `/reviews` marquee (Z.29's
 neighbor, Z.26/Z.27's era) renders one full-width column instead of the
 three-cramped-into-335px state from before that fix.
+
+## Z.30 — mega-menu closed while moving the cursor into its own panel
+
+| | |
+|---|---|
+| **Owner-reported** | Opening Services or Service Areas by hover, then moving the cursor down toward a link in the panel, closed the menu before the cursor ever reached it. |
+| **Root cause** | `MegaMenu.tsx`'s `onMouseEnter`/`onMouseLeave` sit on the wrapper `<div>`, which should make trigger→panel movement a non-event (both are children of the same hoverable box). But the panel is `position: absolute` (`top-full mt-s2`) — absolute children don't contribute to their parent's layout height, so the `mt-s2` gap between trigger and panel sits outside the wrapper's actual hit-area. The cursor exits that hit-area while crossing the gap, firing `onMouseLeave` — which closed the panel with no grace period — before it ever lands on the panel itself. |
+| **Fix** | `onMouseLeave` now schedules the close after `CLOSE_GRACE_MS` (200ms) instead of calling it synchronously, mirroring the existing `HOVER_INTENT_MS` (150ms) open-delay pattern already in the file. `onMouseEnter` clears any pending close. A normal gap transit (well under 200ms) lands back on the trigger or the panel before the timer fires and cancels it; genuinely moving away still closes on schedule. |
+
+**Verified with real mouse events, not a guess and not JS-dispatched
+synthetic events** (a first attempt using
+`element.dispatchEvent(new MouseEvent('mouseenter'/'mouseover', ...))`
+never reached React's handlers at all in testing — React derives
+`onMouseEnter`/`onMouseLeave` from native `mouseover`/`mouseout` since the
+real enter/leave events don't bubble, and even correctly-constructed
+synthetic dispatches didn't reproduce it reliably enough to trust; switched
+to Playwright's `.hover()`, which drives genuine OS-level input). Confirmed
+both directions: hovering the trigger then hovering a panel link keeps
+`aria-expanded="true"` and the panel un-hidden throughout; hovering an
+unrelated element far from the menu closes it within the grace window.
+
+Also added a `useEffect` cleanup for the shared hover timer on unmount —
+missing before, now both the open-intent and close-grace paths use it.

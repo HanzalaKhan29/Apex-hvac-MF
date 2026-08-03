@@ -53,6 +53,14 @@ export interface MegaMenuProps {
 }
 
 const HOVER_INTENT_MS = 150;
+// The panel is `position: absolute` (top-full, mt-s2 below the trigger), so
+// that gap sits outside the wrapper's actual layout box — absolute children
+// don't contribute to their parent's height. Moving the cursor from the
+// trigger down through the gap briefly exits the wrapper's hover hit-area,
+// which closed the panel before the cursor ever reached it. A short close
+// delay (mirroring the open-intent delay above) survives that transit; it's
+// cancelled the instant the cursor lands back on the trigger or the panel.
+const CLOSE_GRACE_MS = 200;
 
 export default function MegaMenu({
   triggerLabel,
@@ -99,6 +107,14 @@ export default function MegaMenu({
     setLastPath(pathname);
     setOpen(false);
   }
+
+  // Both hover handlers now schedule a timer (open-intent, close-grace) —
+  // clear whichever is pending if the component unmounts mid-delay.
+  useEffect(() => {
+    return () => {
+      if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    };
+  }, []);
 
   // Dismissal: outside click.
   useEffect(() => {
@@ -204,11 +220,13 @@ export default function MegaMenu({
 
   // Hover intent — a desktop ENHANCEMENT only. Click works independently.
   const onMouseEnter = () => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    if (open) return; // already open — nothing to schedule, just cancelled a pending close
     hoverTimer.current = setTimeout(() => setOpen(true), HOVER_INTENT_MS);
   };
   const onMouseLeave = () => {
     if (hoverTimer.current) clearTimeout(hoverTimer.current);
-    setOpen(false);
+    hoverTimer.current = setTimeout(() => setOpen(false), CLOSE_GRACE_MS);
   };
 
   const allItems = [...items, { label: viewAllLabel, href: viewAllHref }];
