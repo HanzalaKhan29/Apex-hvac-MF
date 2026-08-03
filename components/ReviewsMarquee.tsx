@@ -33,17 +33,24 @@ function Column({
   mode,
   duration,
   columnIndex,
+  visibilityClassName,
 }: {
   items: readonly Omit<ReviewCardProps, 'mode'>[];
   mode: 'demo' | 'live';
   duration: number;
   columnIndex: number;
+  visibilityClassName?: string;
 }) {
   const [paused, setPaused] = useState(false);
 
   return (
     <div
-      className="min-w-0 flex-1 overflow-hidden"
+      className={[
+        'min-w-0 flex-1 overflow-hidden',
+        visibilityClassName,
+      ]
+        .filter(Boolean)
+        .join(' ')}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
@@ -106,8 +113,19 @@ export default function ReviewsMarquee({ reviews, mode }: ReviewsMarqueeProps) {
       aria-label="Scrolling customer reviews"
       className="flex max-h-[42rem] gap-s4 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_8%,black_92%,transparent)]"
     >
+      {/* Matches the reduced-motion fallback's own md:grid-cols-2
+          lg:grid-cols-3 — three columns squeezed a card down to ~140px on a
+          440px phone, wrapping review text one word per line. Column count
+          now tracks viewport the same way the static grid already does. */}
       {columns.map((col, i) => (
-        <Column key={i} items={col} mode={mode} duration={16 + i * 3} columnIndex={i} />
+        <Column
+          key={i}
+          items={col}
+          mode={mode}
+          duration={16 + i * 3}
+          columnIndex={i}
+          visibilityClassName={i === 1 ? 'hidden md:block' : i === 2 ? 'hidden lg:block' : undefined}
+        />
       ))}
     </div>
   );
