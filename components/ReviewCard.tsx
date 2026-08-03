@@ -33,6 +33,12 @@ export interface ReviewCardProps {
   rating?: number;
   /** live mode only. */
   relativeDate?: string;
+  /** For duplicated marquee passes (ReviewsMarquee) — skips the hidden copy from tab order. */
+  tabIndex?: number;
+  /** For duplicated marquee passes — hides the loop copy from assistive tech. */
+  ariaHidden?: boolean;
+  /** Merged onto the root <li>, e.g. a hover/focus-visible treatment from a caller-owned wrapper. */
+  className?: string;
 }
 
 export default function ReviewCard({
@@ -42,9 +48,16 @@ export default function ReviewCard({
   serviceTag,
   rating,
   relativeDate,
+  tabIndex,
+  ariaHidden,
+  className,
 }: ReviewCardProps) {
   return (
-    <li className="flex">
+    <li
+      tabIndex={tabIndex}
+      aria-hidden={ariaHidden}
+      className={className ? `flex ${className}` : 'flex'}
+    >
       {/*
        * B.20: "Visual. Standard card treatment per §4.7." §4.7 itself reads
        * "box-shadow: var(--shadow-sm) at rest, var(--shadow-md) on hover" —

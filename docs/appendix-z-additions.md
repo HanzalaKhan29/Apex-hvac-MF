@@ -651,3 +651,179 @@ Reviewed all three `dangerouslySetInnerHTML` call sites (`<JsonLd />`,
 `<FAQAccordion />`, `<GoogleAnalytics />`) — all serialize through
 `serialiseJsonLd()`, which escapes `<`, `>` and `&`, or interpolate only
 build-time env values, never user input. No change needed there.
+
+---
+
+## Z.24 — header transition-flash fix
+
+Owner-reported: the header briefly read as washed-out at page load, settling a
+moment later. Not reproducible from a static style inspection — the computed
+colors and the Z.20 scrim were both already correct at rest, which pointed at
+a transient first-paint state rather than a wrong value. `SiteHeader.tsx`
+withholds the background/scrim transition for one tick after mount
+(`useSyncExternalStore`), so nothing can visibly fade in from a wrong state on
+first paint regardless of what triggered it.
+
+## Z.25 — real Framer Motion reviews marquee
+
+Owner-requested motion for `/reviews`. `<ReviewsMarquee />` (Framer Motion,
+dynamically imported from the route file only, never the shared
+`<ReviewsSection />`, so the homepage bundle never pays for it — see the note
+in `ReviewsSection.tsx`) renders the full review set as a three-column,
+per-column-speed vertical loop, pause on hover/focus, static grid fallback
+under `prefers-reduced-motion`. Adapted from the owner-supplied reference
+rather than copy-pasted: the reference used real Unsplash headshots pinned to
+invented names, which would misuse a real person's photo on a fabricated
+testimonial — dropped the avatars, kept the loop/pause/spring mechanics.
+
+**Follow-up (this session):** the original implementation wrapped each
+`<ReviewCard />` (which itself renders `<li>`) inside a second `motion.li`,
+and wrapped each duplicate-loop pass in a `<div>` — both invalid as children
+of `<ul>`, both firing real hydration errors on every load in dev and
+production alike. Fixed by making `<ReviewCard />` itself the animated list
+item (`tabIndex`/`ariaHidden`/`className` props added, applied to its own
+`<li>`) instead of double-wrapping it; the redundant Framer `whileHover`
+spring was dropped since `<ReviewCard />` already has its own CSS hover lift.
+
+## Z.26 — logo strip auto-scroll marquee
+
+| | |
+|---|---|
+| **Blueprint** | B.30 / §6.2 / H.2.2: no marquee, no auto-scroll, at any width, for the manufacturer band. |
+| **Decision** | Overridden. Owner explicitly requested continuous motion on the brand logos. |
+| **Decided by** | User, explicitly. |
+
+Implemented as pure CSS (`.apex-logo-track` / `@keyframes apex-logo-scroll` in
+`globals.css`), the same compositor-only technique as `hero-drift` and
+`cursor-spotlight` (Z.18) — no JS, no animation library, J.4 still holds. The
+brand list renders twice back to back so `translateX(-50%)` loops seamlessly;
+the second pass is `aria-hidden` and untabbable (`tabIndex={-1}`) so assistive
+tech sees the real six brands once, not twelve. Pause-on-hover/focus (WCAG
+2.2.2) is plain `:hover` / `:focus-within` — no listener. Reduced-motion needs
+no extra code: the I.8 global rule already zeroes every `animation-duration`
+on the page.
+
+Replaces the page-load entrance stagger `<LogoStrip />` opted into in Z.19 —
+continuous motion supersedes a one-time reveal, the same reason
+`<ReviewsMarquee />` never used `data-entrance` either.
+
+**Separately found while touching this component:** `manufacturer-carrier.png`
+shipped genuinely cropped at the file level (the oval and top of the wordmark
+were clipped), not a CSS/aspect-ratio bug — the old declared 262×142 matched
+the file's real dimensions exactly, so the file itself was the bad asset.
+Owner supplied a replacement (`carrier png final.png`, 1536×1024, transparent
+background with a soft glow halo). Processed it: cropped to content using the
+file's own alpha channel (threshold >120, to trim the halo down to the crisp
+oval+wordmark rather than keep the full glow spread), downscaled to 367×148 to
+match the sibling logos' scale. `lib/content.ts`'s declared dimensions updated
+to match. Verified via a fetched canvas readback against the running server,
+not just visual inspection — 367×148 natural size, real transparent pixels
+present, Next's image-optimization output confirmed 200/image-png. (One
+gotcha hit while verifying: `next start`'s `.next/cache/images` cache doesn't
+invalidate on a source file swap during local testing — had to clear it by
+hand to stop it serving the old cropped image under the same optimizer URL.
+Not an issue in a real deploy, where the cache starts empty.)
+
+Owner then supplied clean replacements for the other five brands too (`trane
+final.png`, `lennox final.png`, `rheem final.png`, `york final.png`, `daikin
+final.png`, all 1024×1024, transparent). Same alpha-bbox crop, downscaled to
+148px tall to match. `lib/content.ts` dimensions updated for all five.
+
+### Follow-up: two real defects found by measurement, not by eye
+
+Owner reported the marquee showed a repeated logo and asked for it fixed
+without guesswork. Verified with real `getBoundingClientRect()` /
+`getComputedStyle()` reads against the running build (this sandbox's browser
+pane doesn't composite frames, so a screenshot can't prove motion — DOM
+measurement was the only way to get real evidence rather than assume):
+
+1. **`max-w-[7.5rem]` clipped wide logos unevenly.** York's true aspect ratio
+   needs ~178px width at the fixed 36px height; capped to 120px, `object-contain`
+   letterboxed the actual rendered mark down to ~24px tall — visibly smaller
+   than Carrier or Rheem next to it. Same for Daikin (~28px) and Lennox
+   (~34px). The cap was sized for the old single-logo grid cell and never
+   revisited for the marquee's flex row, which doesn't need it — removed;
+   each logo now renders at its own aspect ratio, uniformly 36px tall
+   (confirmed: `heights: [36]` across all 12 rendered `<li>`, no outliers).
+
+2. **The loop was wrong at the CSS level, in two compounding ways.**
+   - `translateX(%)` resolves against the *track element's own box*, not its
+     overflowing children. `.apex-logo-track` had no explicit width, so its
+     box stayed clipped to `.apex-logo-viewport`'s width (measured: track box
+     1137px while its content actually spanned to 2925px) — `-50%` was moving
+     by half of the wrong number entirely. Fixed with `width: max-content` on
+     the track, the standard fix for this exact class of bug.
+   - Flex `gap` doesn't add space after the last child, so a two-pass
+     `max-content` track built with `gap-s6` came out ~48px short of being
+     exactly double the true repeat distance — `-50%` under-shot the seam by
+     that amount, which would show as a small jump every loop. Fixed by
+     moving the spacing from the track's `gap` to `mr-s6` on every item
+     (including the last), which *is* periodic. Verified after the fix: the
+     `-50%` shift (990.94px) matches the actual pass-to-pass offset for every
+     one of the six logos (990.93–990.94px, sub-pixel rounding only) —
+     confirmed genuinely seamless, not assumed.
+   - Separately, six logos only span ~940px even with normal spacing, well
+     under the page's own 1280px content ceiling (measured directly: content
+     width stays 1280px at both 1920px and 2560px window widths, confirming
+     it's a hard cap, not a guess) — a two-pass loop at that width put the
+     repeat's first item inside the same viewport as the original (measured:
+     duplicate "Carrier" at `left: 991px` inside an 1137px view). Rather than
+     fight for a spacing value tuned to today's six logo widths (which would
+     silently break again the next time a brand logo changes size — as
+     happened twice already in this session), `.apex-logo-viewport` is capped
+     at `max-w-2xl` (672px) regardless of section width. Six logos never fit
+     inside 672px, so the strip always has something to reveal and the
+     repeat can never land in view — true at any screen size structurally,
+     not by coincidence of the current asset set.
+
+---
+
+## Z.27 — header scrim fixed a live, reproducible washed-out flash
+
+| | |
+|---|---|
+| **Owner-reported** | Live site (`apex-comfort-systems.vercel.app`): header renders washed-out/illegible on first paint, corrects itself after scrolling a few pixels. Screenshotted both states. |
+| **Root cause** | Z.20's scrim gradient (`from-black/45 via-black/15 to-transparent`) fades to fully transparent at the BOTTOM of its own height — which is exactly where the nav row (logo, links) sits, not the topbar. The topbar got real coverage; the row people actually read got almost none. Z.20's own stated purpose — "guarantees legibility independent of whatever the hero is doing behind it" — didn't hold for the one row that mattered. |
+| **Fix** | Flat `bg-black/45`, no gradient. Every pixel of the scrim's height gets the same coverage, so the nav row's legibility no longer depends on where a gradient stop happens to land. |
+
+`SiteHeader.tsx`'s scrim block, `app/globals.css` untouched (the scrim is a
+plain className, not a `.apex-*` utility).
+
+## Z.28 — logo replaced with owner-supplied artwork; raster PNG, not SVG
+
+| | |
+|---|---|
+| **Blueprint** | E.0/E.1: the lockup ships as inline SVG using `currentColor`, specifically so the header can flip it between the transparent-over-hero state (light) and the solid-on-scroll state (dark) without a second asset. |
+| **Owner action** | Supplied new artwork (`apex logo final.png`) to replace the hand-drawn mark. |
+| **Constraint that survived the swap** | A flat raster image is always one fixed color — dropping in just the new artwork would make the logo invisible against the dark hero in the transparent header state, the same legibility class as Z.27, just permanent. |
+| **Decision** | Processed the source into two color variants per size (mark/full × dark/light) rather than one image. Navy pixels (measured ~RGB(9,26,42), matching `--apex-ink` almost exactly) recolored to `--apex-paper` for the light pair; the orange/copper accent is untouched in both, preserving the original SVG's "copper is never recolored" rule (§5.2.1). `<Logo scheme="dark" \| "light">` selects the pair; `SiteHeader.tsx` passes it from the same `transparent` boolean that already drove the text-color classes. `SiteFooter.tsx` hardcodes `"light"` (dark footer, always). |
+
+**Two defects found building this, both caught before commit, not after:**
+
+1. **Bundle regression.** First pass used `next/image`. `<LogoStrip />`
+   (homepage-only) was the only other `next/image` consumer, so its client
+   runtime lived in a route-specific chunk. Wiring it into `<SiteHeader />` —
+   present on every route — promoted that runtime into the truly-shared
+   chunk and pushed it to 213.4KB against the 210KB budget. Fixed by using a
+   plain `<img>` instead: this is a small, fixed-size, pre-optimized static
+   file that never needs on-demand resizing, so there was no reason to pay
+   for `next/image`'s client code at all. Back to 208.2KB.
+2. **404 in production.** Files initially lived under `public/logo/`.
+   `proxy.ts`'s matcher excludes paths starting with the literal prefix
+   `logo-` (for `logo-full.svg` et al.) from the locale rewrite — it does not
+   exclude a `/logo/` folder. Every request for `/logo/apex-logo-*.png` was
+   silently rewritten to `/en/logo/apex-logo-*.png` first and 404'd, since no
+   file exists there. Fixed by renaming to `public/logo-apex-{mark,full}-
+   {dark,light}.png`, matching the existing convention instead of adding a
+   new one. Verified after the fix: all four variants return 200, both in a
+   direct `curl` and from the rendered `<img>` tags' `naturalWidth`.
+
+**Known follow-up, not done in this pass:** `public/logo-full.svg` /
+`logo-mark.svg` / their `-inverse` siblings (the OG image composition, the
+JSON-LD `logo` property, the IMG-09 van composite) and the favicon /
+apple-touch-icon set are still built by `scripts/build-logo.mjs` from the old
+hand-drawn geometry. The on-site header/footer logo and these static assets
+now show two different marks. Flagged rather than left silently
+inconsistent — updating them needs either re-running that script against
+traced vector geometry of the new artwork, or a decision to serve the new
+PNG in those contexts too.

@@ -54,22 +54,18 @@ function Column({
         transition={{ duration, repeat: Infinity, ease: 'linear' }}
         className="m-0 flex list-none flex-col gap-s4 p-0"
       >
-        {[0, 1].map((pass) => (
-          <div key={pass} className="flex flex-col gap-s4" aria-hidden={pass === 1}>
-            {items.map((review, i) => (
-              <motion.li
-                key={`${columnIndex}-${pass}-${i}`}
-                tabIndex={pass === 1 ? -1 : 0}
-                whileHover={{ scale: 1.02 }}
-                whileFocus={{ scale: 1.02 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-                className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-apex-copper"
-              >
-                <ReviewCard {...review} mode={mode} />
-              </motion.li>
-            ))}
-          </div>
-        ))}
+        {[0, 1].flatMap((pass) =>
+          items.map((review, i) => (
+            <ReviewCard
+              key={`${columnIndex}-${pass}-${i}`}
+              {...review}
+              mode={mode}
+              tabIndex={pass === 1 ? -1 : 0}
+              ariaHidden={pass === 1}
+              className="transition-transform duration-[var(--dur-hover)] ease-out hover:scale-[1.02] focus-visible:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-apex-copper"
+            />
+          ))
+        )}
       </motion.ul>
     </div>
   );

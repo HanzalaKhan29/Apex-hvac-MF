@@ -170,12 +170,12 @@ export const DEMO_REVIEWS = [
  * the wrong box during that load window, which read as a cropped logo.
  */
 export const MANUFACTURER_BRANDS = [
-  { name: 'Carrier', src: 'manufacturer-carrier.png', width: 262, height: 142 },
-  { name: 'Trane', src: 'manufacturer-trane.png', width: 160, height: 148 },
-  { name: 'Lennox', src: 'manufacturer-lennox.png', width: 253, height: 148 },
+  { name: 'Carrier', src: 'manufacturer-carrier.png', width: 367, height: 148 },
+  { name: 'Trane', src: 'manufacturer-trane.png', width: 468, height: 148 },
+  { name: 'Lennox', src: 'manufacturer-lennox.png', width: 527, height: 148 },
   { name: 'Rheem', src: 'manufacturer-rheem.png', width: 153, height: 148 },
-  { name: 'York', src: 'manufacturer-york.png', width: 188, height: 148 },
-  { name: 'Daikin', src: 'manufacturer-daikin.png', width: 225, height: 148 },
+  { name: 'York', src: 'manufacturer-york.png', width: 733, height: 148 },
+  { name: 'Daikin', src: 'manufacturer-daikin.png', width: 642, height: 148 },
 ] as const;
 
 /**

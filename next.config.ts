@@ -37,10 +37,16 @@ const nextConfig: NextConfig = {
    * rather than hidden.
    */
   async headers() {
+    // Dev-only: React's dev bundle uses eval() to reconstruct stack traces
+    // across module boundaries (React never does this in production — see
+    // its own console message). Without 'unsafe-eval' here, `next dev` spams
+    // a harmless-but-noisy console error on every navigation. Scoped to
+    // development so production's CSP stays exactly as strict as before.
+    const isDev = process.env.NODE_ENV === 'development';
     const csp = [
       "default-src 'self'",
       // googletagmanager: GA4 (§8.6). challenges.cloudflare.com: Turnstile (G.4).
-      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://challenges.cloudflare.com",
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://challenges.cloudflare.com`,
       // Tailwind injects styles; next/font emits inline @font-face.
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://www.googletagmanager.com",

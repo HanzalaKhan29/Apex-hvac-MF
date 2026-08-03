@@ -1,100 +1,70 @@
 /**
- * The lockup, inlined.
+ * The lockup. Owner-supplied artwork (`apex logo final.png`), replacing the
+ * hand-drawn inline SVG this component used to render.
  *
- * Appendix E.1 defines logo-full.svg / logo-full-inverse.svg as files, and
- * those files exist in public/ for the uses that need a real asset — the
- * og-default.jpg composition, the structured-data `logo` property, and the
- * IMG-09 van composite. On-site, the lockup is inlined instead: E.0 notes the
- * logo sits in the header on every page and therefore counts directly against
- * the §6.3 LCP budget, and inlining removes that request entirely.
+ * WHY TWO COLOR VARIANTS, NOT ONE IMAGE (this is the part that isn't
+ * optional): the previous inline-SVG lockup used `currentColor` for its dark
+ * strokes so the header could flip it between the transparent-over-hero state
+ * (needs light/white) and the solid-on-scroll state (needs dark navy) without
+ * a second asset. A flat raster image can't do that — a single PNG is always
+ * one fixed color. Dropping in only the dark-navy artwork would have made the
+ * logo invisible against the dark hero in the transparent header state, which
+ * is the same class of legibility bug as the Z.24/Z.27 header-flash issue,
+ * just permanent instead of transient.
  *
- * Geometry is identical to public/logo-full.svg — both come from
- * scripts/build-logo.mjs, which is the single geometry source.
+ * So the source image was processed into two variants per size: navy pixels
+ * (measured ~RGB(9,26,42), matching --apex-ink almost exactly) recolored to
+ * --apex-paper for the light variant; the orange/copper accent is identical
+ * in both, matching the original SVG's copper-is-never-recolored rule
+ * (§5.2.1). `scheme` selects which pair renders; callers that always sit on
+ * one background (the footer) just hardcode it.
  *
- * The ink strokes and the wordmark resolve from currentColor, so the header
- * can flip the lockup between its transparent-over-hero and solid-on-scroll
- * states without loading a second asset. The copper is fixed: logo files are
- * never recoloured by CSS (§5.2.1, E.1).
+ * Plain <img>, not next/image: this is a small, fixed-size, pre-optimized
+ * static file that never needs on-demand resizing, and next/image's client
+ * runtime wasn't previously in the app's SHARED bundle (only <LogoStrip />,
+ * homepage-only, used it). Wiring it into the header — present on every
+ * route — promoted it into the shared chunk and broke the J.4 budget by
+ * ~3.4KB on the first attempt. A plain <img> costs zero JS, matching the old
+ * inline-SVG's actual bundle footprint far more closely.
+ *
+ * Not yet updated to match: public/logo-full.svg (OG image, JSON-LD `logo`,
+ * the IMG-09 van composite) and the favicon/apple-touch-icon set — those are
+ * static single-color contexts built by scripts/build-logo.mjs from the old
+ * SVG geometry. Flagged, not silently left inconsistent.
  */
 
 export interface LogoProps {
-  /** 'mark' renders the 1:1 mark alone, for constrained contexts. */
+  /** 'mark' renders the icon alone, for constrained contexts. */
   variant?: 'full' | 'mark';
+  /** 'light' for the transparent-over-hero header state and the dark footer; 'dark' everywhere else. */
+  scheme?: 'dark' | 'light';
   className?: string;
+  priority?: boolean;
 }
 
-const MARK = (
-  <g fill="none" strokeLinecap="butt" strokeLinejoin="miter">
-    <g stroke="#AD5622" strokeWidth="9">
-      <path d="M40 44 L3 56" />
-      <path d="M34 59 L6 68" />
-      <path d="M28 73 L11 79" />
-    </g>
-    <g stroke="currentColor" strokeWidth="11">
-      <path d="M16 80 L56 8 L96 80" />
-      <path d="M35 80 L56 41 L77 80" />
-    </g>
-  </g>
-);
+// /logo-*, not /logo/*: proxy.ts's matcher excludes the `logo-` PREFIX (for
+// logo-full.svg et al.) from the locale rewrite, not a `/logo/` folder — a
+// subfolder path 404'd in production because it got silently rewritten to
+// /en/logo/... first. See proxy.ts's matcher comment.
+const SOURCES = {
+  mark: { dark: '/logo-apex-mark-dark.png', light: '/logo-apex-mark-light.png', width: 212, height: 148 },
+  full: { dark: '/logo-apex-full-dark.png', light: '/logo-apex-full-light.png', width: 614, height: 148 },
+} as const;
 
-const FONT_STACK =
-  "var(--font-geist), ui-sans-serif, system-ui, -apple-system, sans-serif";
+export default function Logo({ variant = 'full', scheme = 'dark', className, priority }: LogoProps) {
+  const { dark, light, width, height } = SOURCES[variant];
 
-export default function Logo({ variant = 'full', className }: LogoProps) {
-  if (variant === 'mark') {
-    return (
-      <svg
-        viewBox="0 0 100 86"
-        role="presentation"
-        aria-hidden="true"
-        focusable="false"
-        className={className}
-      >
-        {MARK}
-      </svg>
-    );
-  }
-
+  // eslint-disable-next-line @next/next/no-img-element
   return (
-    <svg
-      viewBox="0 0 186 40"
+    <img
+      src={scheme === 'light' ? light : dark}
+      alt=""
       role="presentation"
-      aria-hidden="true"
-      focusable="false"
+      width={width}
+      height={height}
+      fetchPriority={priority ? 'high' : undefined}
+      decoding={priority ? 'sync' : 'async'}
       className={className}
-    >
-      <g transform="translate(0 1) scale(0.4535)">{MARK}</g>
-      <text
-        x="58"
-        y="24.5"
-        fontFamily={FONT_STACK}
-        fontSize="28"
-        fontWeight="800"
-        letterSpacing="-0.02em"
-        textLength="124"
-        lengthAdjust="spacingAndGlyphs"
-        fill="currentColor"
-      >
-        APEX
-      </text>
-      {/*
-       * §5.2.1's copper-in-logo exception: the wordmark subtitle is set in
-       * copper as BRAND IDENTITY, not as an affordance. This is the only
-       * permitted non-actionable use of copper anywhere in the system.
-       */}
-      <text
-        x="58"
-        y="35.5"
-        fontFamily={FONT_STACK}
-        fontSize="7.4"
-        fontWeight="700"
-        letterSpacing="0.16em"
-        textLength="124"
-        lengthAdjust="spacing"
-        fill="#AD5622"
-      >
-        COMFORT SYSTEMS
-      </text>
-    </svg>
+    />
   );
 }

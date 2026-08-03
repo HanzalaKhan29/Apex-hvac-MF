@@ -90,7 +90,7 @@ export default function SiteFooter({ services, cities }: SiteFooterProps) {
         <div className="grid gap-s6 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand and licence info. */}
           <div>
-            <Logo variant="full" className="h-10 w-auto text-apex-paper" />
+            <Logo variant="full" scheme="light" className="h-10 w-auto" />
             <p className="mt-s3 text-body text-apex-paper/75">{TAGLINE}</p>
 
             {/* NAP — byte-identical to the JSON-LD and the GBP (§8.5). */}

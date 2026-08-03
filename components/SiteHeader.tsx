@@ -138,21 +138,30 @@ export default function SiteHeader({
       ].join(' ')}
     >
       {/*
-       * Z.20 — a fixed dark scrim behind the transparent-resting header row.
-       * The transparent state is meant to sit on the dark hero, but the hero's
-       * own ambient drift highlight (.hero-drift, Z.18) can pass a lighter
-       * patch directly under the nav on some frames, which reads as
+       * Z.20 / Z.27 — a fixed dark scrim behind the transparent-resting header
+       * row. The transparent state is meant to sit on the dark hero, but the
+       * hero's own ambient drift highlight (.hero-drift, Z.18) can pass a
+       * lighter patch directly under the nav on some frames, which reads as
        * low-contrast/washed-out text until the header switches to its solid
-       * state on scroll. This scrim guarantees legibility independent of
-       * whatever the hero is doing behind it. Decorative only, and it fades
-       * out with the same transition as the background-color swap above.
+       * state on scroll.
+       *
+       * Z.27 — Z.20's gradient (`from-black/45 via-black/15 to-transparent`)
+       * faded to fully transparent by the BOTTOM of its own height, which is
+       * where the actual nav row content (logo, links) sits — the scrim was
+       * covering the topbar strip well and giving the row people actually
+       * read almost no coverage at all, the opposite of "guarantees
+       * legibility independent of what's behind it." That's the owner-
+       * reported live-site glitch: header washed out on first paint, fixed
+       * once scroll flips it to the solid state. Flat, uniform opacity now —
+       * the nav row gets the same coverage as the topbar, by construction,
+       * not by where a gradient stop happens to land.
        */}
       {transparentUntilScroll ? (
         <div
           aria-hidden="true"
           className={[
             'pointer-events-none absolute inset-x-0 top-0 -z-10 h-[calc(var(--header-h)+var(--topbar-h))]',
-            'bg-gradient-to-b from-black/45 via-black/15 to-transparent',
+            'bg-black/45',
             mounted ? 'transition-opacity duration-[var(--dur-button)] ease-out' : '',
             transparent ? 'opacity-100' : 'opacity-0',
           ].join(' ')}
@@ -170,8 +179,18 @@ export default function SiteHeader({
              needs a floor on width as well as height. */
           className="flex min-h-11 min-w-11 shrink-0 items-center"
         >
-          <Logo variant="mark" className="h-9 w-auto md:hidden" />
-          <Logo variant="full" className="hidden h-9 w-auto md:block" />
+          <Logo
+            variant="mark"
+            scheme={transparent ? 'light' : 'dark'}
+            priority
+            className="h-9 w-auto md:hidden"
+          />
+          <Logo
+            variant="full"
+            scheme={transparent ? 'light' : 'dark'}
+            priority
+            className="hidden h-9 w-auto md:block"
+          />
         </Link>
 
         {/* lg+ — the real primary navigation. */}

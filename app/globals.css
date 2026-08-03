@@ -679,6 +679,37 @@
   }
 }
 
+/* Logo strip auto-scroll. Z.26 — owner-requested override of B.30/§6.2's
+   "no marquee, no auto-scroll" rule for the manufacturer band specifically.
+   Same compositor-only technique as the two blocks above: one CSS animation,
+   no JS, no observer. Pause on hover/focus is plain :hover/:focus-within, no
+   listener needed. Reduced-motion is covered by the I.8 block above without
+   extra code, since it zeroes every animation-duration on the page. */
+.apex-logo-viewport:hover .apex-logo-track,
+.apex-logo-viewport:focus-within .apex-logo-track {
+  animation-play-state: paused;
+}
+
+.apex-logo-track {
+  /* Critical: translateX(%) resolves against the element's OWN box, not its
+     overflowing children. Without this, the track's box stays clipped to
+     .apex-logo-viewport's width and the loop distance is wrong regardless of
+     what the keyframe percentage says. max-content makes the box match the
+     real (two-pass) content span, so -50% is actually one pass-width. */
+  width: max-content;
+  animation: apex-logo-scroll 34s linear infinite;
+}
+
+@keyframes apex-logo-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* Track is 2 identical passes (LogoStrip.tsx) — exactly one pass-width. */
+    transform: translateX(-50%);
+  }
+}
+
 /* §4.11 — entrance animation. Applied ONLY to sections above the
    MOTION_ENTRANCE_THRESHOLD; everything below renders statically and is never
    observed. Elements start at their final state and the class is removed on
