@@ -18,7 +18,10 @@ export const BUSINESS_NAME = 'Apex Comfort Systems';
 /** §2.1 — "Comfort, Engineered." */
 export const TAGLINE = 'Comfort, Engineered.';
 
-export const SITE_URL = 'https://www.apexcomfortsystems.com';
+// TEMP: real domain (apexcomfortsystems.com) isn't DNS-live yet — points at
+// the vercel.app prod alias so canonical/og/sitemap URLs actually resolve.
+// Swap back to 'https://www.apexcomfortsystems.com' once DNS is pointed.
+export const SITE_URL = 'https://apex-comfort-systems.vercel.app';
 
 /** Display form. §9.4-flagged — confirm before launch. */
 export const PHONE_DISPLAY = ph('phone') ?? '';
