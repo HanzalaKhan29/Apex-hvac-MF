@@ -193,6 +193,7 @@ export default function QuoteCard({
           required
           readOnly={pending}
           autoComplete="name"
+          maxLength={60}
           defaultValue={initial('name', prefill.name)}
           error={errors.name}
         />
