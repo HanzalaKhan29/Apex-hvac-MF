@@ -148,6 +148,9 @@ export default function SiteFooter({ services, cities }: SiteFooterProps) {
             <Link href="/terms-of-service" className="underline underline-offset-2">
               Terms of Service
             </Link>
+            <Link href="/cookie-policy" className="underline underline-offset-2">
+              Cookie Policy
+            </Link>
           </p>
         </div>
       </div>

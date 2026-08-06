@@ -37,6 +37,7 @@ export const INDEXABLE_ROUTES: readonly RouteEntry[] = [
   { path: '/contact', label: 'Contact' },
   { path: '/privacy-policy', label: 'Privacy Policy' },
   { path: '/terms-of-service', label: 'Terms of Service' },
+  { path: '/cookie-policy', label: 'Cookie Policy' },
 ];
 
 /** Routes that contain a form, so the sticky bar links to #quote (B.6). */
