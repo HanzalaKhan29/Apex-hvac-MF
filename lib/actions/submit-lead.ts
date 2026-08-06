@@ -13,11 +13,20 @@ import { businessNotificationHtml, customerConfirmationHtml } from '@/lib/email-
  *
  * Two forms ship at v1 and share ONE action, one validation schema family and
  * one transport (G.0):
- *   Quote    <QuoteCard />    Service Needed, Name, Phone, Zip
- *   Callback <CallbackForm /> Name, Phone, Best time to call, Message
+ *   Quote    <QuoteCard />    Service Needed, Name, Phone, Zip (+ optional Email, Z.26)
+ *   Callback <CallbackForm /> Name, Phone, Best time to call (+ optional Email, Z.26)
  *
- * FIELD COUNT IS LOCKED (§3.4). The quote form stays at exactly four fields.
- * Do not expand it — every additional field costs roughly 10% of submissions.
+ * FIELD COUNT IS LOCKED (§3.4). The quote form stays at exactly four required
+ * fields, the callback form at exactly three. Do not expand either — every
+ * additional field costs roughly 10% of submissions.
+ *
+ * `callbackSchema` below still accepts an optional `message`, matching an
+ * earlier draft of this comment that listed it as a real field. No form
+ * actually renders that textarea (found during an audit pass, not by
+ * design), so it stays permanently undefined in production. Left in the
+ * schema rather than removed, since deleting it would be a silent contract
+ * change for the email template that already reads `lead.message`, and
+ * `.optional()` means it costs nothing to leave.
  *
  * TRANSPORT (G.3, reordered by Z.26): Server Action → Supabase (`leads`) →
  * business notification email → customer confirmation email (only if an
