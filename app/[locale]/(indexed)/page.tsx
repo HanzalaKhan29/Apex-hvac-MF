@@ -47,6 +47,11 @@ export const metadata: Metadata = {
       'Licensed and insured HVAC for Phoenix metro. Same-day AC repair available, flat-rate pricing, no surprises. Call 24/7 or get your flat-rate quote.',
     type: 'website',
     url: `${SITE_URL}/`,
+    // Every other route sets this (contact, faq, financing, services, the two
+    // legal pages, cookie-policy); the homepage was the one route missing it,
+    // so a shared link falls back to no preview image at all instead of this
+    // default. Universal Website Build Checklist, Phase 7.
+    images: ['/images/og-default.jpg'],
   },
   twitter: { card: 'summary_large_image' },
 };
