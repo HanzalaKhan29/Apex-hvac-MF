@@ -51,8 +51,12 @@ const nextDir = join(root, '.next');
  * default-bundler floor plus ~4%, which preserves the intent (hold the line
  * just above the framework baseline) rather than the literal number.
  */
-const BUDGET_FIRST_LOAD_KB = 220;
-const BUDGET_SHARED_KB = 210;
+// Revised again, Z.31 — adding app/[locale]/error.tsx (required client-side
+// error boundary; Next ships its componentDidCatch runtime with every route
+// under the segment) moved the measured floor to 221.6 / 211.9. Same small-
+// headroom philosophy as the note above, not a new one.
+const BUDGET_FIRST_LOAD_KB = 225;
+const BUDGET_SHARED_KB = 215;
 
 if (!existsSync(nextDir)) {
   console.error('\n  No .next build found. Run `next build` first.\n');

@@ -923,3 +923,12 @@ unrelated element far from the menu closes it within the grace window.
 
 Also added a `useEffect` cleanup for the shared hover timer on unmount —
 missing before, now both the open-intent and close-grace paths use it.
+
+## Z.31 — J.4 bundle budget revised a second time, for error.tsx
+
+| | |
+|---|---|
+| **Gap** | No `error.tsx` (page-level) or `global-error.tsx` (root-layout-level) existed anywhere in `app/`. Any unhandled runtime error showed Next's default, unbranded overlay/blank screen instead of an on-brand recovery page — Universal Website Build Checklist Phase 6. |
+| **Root cause of the budget hit** | `app/[locale]/error.tsx` must be a Client Component (`'use client'`) — that's a Next.js requirement, not a choice — so its own JS, however small, ships in the client bundle for every route under `[locale]`, not just the error path. First attempt reused the shared `<Section>`/`<SectionHeading>`/`<Button>`/`<HeaderSlot>`/`<SiteFooter>` components for full chrome parity with `NotFoundTemplate`; that alone added ~26KB to the shared chunk because those components (previously rendered server-side everywhere else) got pulled into the client bundle through the error boundary's client-component boundary. Rewritten with plain markup and zero component imports (existing Tailwind utility classes only — zero marginal JS cost), which cut it to ~3.7KB — the floor cost of React's client-side error-boundary runtime itself, not reducible further without dropping the boundary entirely. |
+| **Decision** | Owner approved raising `BUDGET_FIRST_LOAD_KB` 220→225 and `BUDGET_SHARED_KB` 210→215 (measured floor with the boundary: 221.6 / 211.9) rather than shipping without a branded error page. Confirmed with the owner directly — not assumed — since J.4 is an explicitly build-blocking, already-once-revised gate. |
+| **Scope kept minimal** | Only `app/[locale]/error.tsx` (page-level) + `app/global-error.tsx` (root-layout-level, own `<html>`/`<body>`, inline styles — the root layout that supplies `globals.css` is exactly what this one exists to catch, so it can't depend on it) were added. A third tier — a root-segment `app/error.tsx` to catch `app/[locale]/layout.tsx` failures specifically with full chrome — was prototyped, cost another ~10KB, and was dropped; that failure mode falls through to `global-error.tsx` instead, which is still on-brand, just without the header/footer. |

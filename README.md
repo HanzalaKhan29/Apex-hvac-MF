@@ -201,3 +201,6 @@ All twelve are recorded with measurements and reasoning in
    target. Approved, kept verbatim.
 3. **Roboto subset is 6.6KB**, not §4.3's 3–5KB estimate. The ★ glyph is
    expensive; still far under the ~15KB full-Latin alternative. Approved.
+4. **J.4 bundle budgets revised again**, 220KB/210KB → 225KB/215KB, for
+   `app/[locale]/error.tsx`'s unavoidable client-boundary runtime cost. See
+   Z.31.
