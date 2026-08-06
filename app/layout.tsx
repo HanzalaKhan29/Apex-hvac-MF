@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Inter } from 'next/font/google';
 import localFont from 'next/font/local';
+import { SITE_URL } from '@/lib/contact';
 import './globals.css';
 
 /**
@@ -59,7 +60,10 @@ const roboto = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.apexcomfortsystems.com'),
+  // TEMP — see SITE_URL in lib/contact.ts (points at the vercel.app prod
+  // alias until apexcomfortsystems.com DNS is live). This literal duplicated
+  // that domain and didn't get updated with it; now it can't drift again.
+  metadataBase: new URL(SITE_URL),
   title: 'Apex Comfort Systems | Licensed HVAC Repair & Installation, Phoenix Metro',
   icons: {
     icon: [
