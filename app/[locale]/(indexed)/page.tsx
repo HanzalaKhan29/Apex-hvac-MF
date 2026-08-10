@@ -6,6 +6,10 @@ import LogoStrip from '@/components/LogoStrip';
 import ServicesGrid from '@/components/ServicesGrid';
 import StatsSection from '@/components/StatsSection';
 import WhyApexSection from '@/components/WhyApexSection';
+import Section from '@/components/Section';
+import SectionHeading from '@/components/SectionHeading';
+import ProjectCard from '@/components/ProjectCard';
+import Button from '@/components/Button';
 import TrustPhotoBand from '@/components/TrustPhotoBand';
 import FinancingBanner from '@/components/FinancingBanner';
 import ProcessSection from '@/components/ProcessSection';
@@ -15,6 +19,7 @@ import { PHONE_E164, SITE_URL } from '@/lib/contact';
 import { HOME, DEMO_REVIEWS, MANUFACTURER_BRANDS } from '@/lib/content';
 import { CTA, heroTrustRow, serviceCards } from '@/lib/ui';
 import { gateOpen } from '@/lib/placeholders';
+import { PROJECTS } from '@/lib/projects';
 
 /**
  * A.1 — `/` Homepage. Template: HomeTemplate.
@@ -25,12 +30,13 @@ import { gateOpen } from '@/lib/placeholders';
  * service pages convert at 15–25% against 3–5% for homepage traffic.
  *
  * Ordered sections (§5, sequence carried forward from phase0 per §0.2;
- * Z.36 inserts 5b, everything after renumbers by one but keeps its §5 role):
+ * Z.36/Z.37 insert 5a/5b, everything after keeps its §5 role):
  *   1  Hero + QuoteCard   58/42 asymmetric, --apex-ink, no background photo
  *   2  Manufacturer strip gated by §9.4
  *   3  Services           6 cards, 3×2, each now a real photo (Z.35)
  *   4  Stats              4 blocks on --apex-ink
  *   5  Why Apex           image/text split, 4 rows, floating stat badge
+ *   5a Recent work        3-card teaser from lib/projects.ts (Z.37)
  *   5b Trust photo band   full-bleed real crew photo, --apex-ink scrim (Z.36)
  *   6  Financing banner   --apex-sage-tint ground, --apex-ink text
  *   7  Process            4 steps
@@ -145,6 +151,42 @@ export default function HomePage() {
         badge={HOME.whyApex.badge}
         features={whyFeatures}
       />
+
+      {/* 5a — Z.37: three-card teaser drawn from /projects's real completed-work
+              photography (lib/projects.ts, shared with that page rather than
+              duplicated). Deliberately NOT placed next to <ServicesGrid /> or
+              between <ProcessSection />/<ReviewsSection /> — those two are
+              already adjacent card grids, and a third in a row is exactly the
+              "Section-Layout-Repetition" pattern this redesign pass is
+              working against elsewhere on the page. `wide` is stripped (never
+              passed) so all three sit at equal width in this 3-across teaser,
+              unlike /projects's 2×3-with-one-wide-cell grid. */}
+      {/* ground="paper", not "n50" — <WhyApexSection /> right above this is
+          already n50; repeating it here would merge the two into one long
+          band with no visible seam instead of two distinct ones. */}
+      <Section ground="paper" labelledBy="recent-work-heading">
+        <SectionHeading
+          heading="Recent work"
+          level={2}
+          id="recent-work-heading"
+        />
+        <ul className="mt-s6 grid list-none grid-cols-1 gap-s3 md:grid-cols-3 md:gap-s4">
+          {PROJECTS.slice(0, 3).map((project) => (
+            <ProjectCard
+              key={project.image.src}
+              image={project.image}
+              installationType={project.installationType}
+              caption={project.caption}
+              city={project.city}
+            />
+          ))}
+        </ul>
+        <div className="mt-s6">
+          <Button variant="ink" href="/projects">
+            View All Projects
+          </Button>
+        </div>
+      </Section>
 
       {/* 5b — Z.36: full-bleed photo trust band, a fourth distinct layout
               family so the page doesn't read as card, card, card end to end. */}

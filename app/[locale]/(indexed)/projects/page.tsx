@@ -7,6 +7,7 @@ import FeatureRow from '@/components/FeatureRow';
 import FooterCTA from '@/components/FooterCTA';
 import { SITE_URL } from '@/lib/contact';
 import { HOME } from '@/lib/content';
+import { PROJECTS } from '@/lib/projects';
 
 /**
  * A.9 — `/projects`. StandardPageTemplate.
@@ -25,6 +26,10 @@ import { HOME } from '@/lib/content';
  * Five images fill the 2×3 grid with one wide cell; the sixth delivered
  * candidate was dropped for a posed idle stance against a mid-task-only
  * prompt, and no regeneration is required to replace it (§7, D.1.9–13).
+ *
+ * Z.37 — the PROJECTS data that used to live inline here now lives in
+ * lib/projects.ts, so the homepage's three-card teaser reads the same
+ * captions instead of a second, driftable copy of them.
  */
 
 const title = 'HVAC Projects & Installations | Apex Comfort Systems';
@@ -44,61 +49,6 @@ export const metadata: Metadata = {
   },
   twitter: { card: 'summary_large_image' },
 };
-
-const PROJECTS = [
-  {
-    image: {
-      src: 'project-attic-air-handler.jpg',
-      alt: 'Technician inspecting a newly installed attic air handler with insulated duct runs',
-      focalPoint: '55% 50%',
-    },
-    installationType: 'Attic air handler replacement',
-    caption: 'New air handler with re-sealed plenum and insulated duct runs.',
-    city: 'Mesa',
-    wide: true,
-    priority: true,
-  },
-  {
-    image: {
-      src: 'project-commercial-rooftop.jpg',
-      alt: 'Completed commercial rooftop packaged unit on a steel curb with conduit runs',
-      focalPoint: '50% 55%',
-    },
-    installationType: 'Commercial rooftop packaged unit',
-    caption: 'RTU set on a new steel curb with re-run conduit and condensate.',
-    city: 'Phoenix',
-  },
-  {
-    image: {
-      src: 'project-mechanical-room.jpg',
-      alt: 'Finished mechanical room with sheet-metal trunk lines and a commercial air handler',
-      focalPoint: '50% 55%',
-    },
-    installationType: 'Commercial mechanical room',
-    caption: 'Air handler and sheet-metal trunk lines after a full re-fit.',
-    city: 'Tempe',
-  },
-  {
-    image: {
-      src: 'project-residential-mechanical.jpg',
-      alt: 'Residential mechanical room with a high-efficiency furnace, humidifier and copper line set',
-      focalPoint: '45% 55%',
-    },
-    installationType: 'Residential mechanical room',
-    caption: 'High-efficiency furnace with a new copper line set and drain.',
-    city: 'Chandler',
-  },
-  {
-    image: {
-      src: 'project-condenser-pad.jpg',
-      alt: 'New outdoor condenser unit on a level concrete pad beside a desert-landscaped home',
-      focalPoint: '55% 60%',
-    },
-    installationType: 'Outdoor condenser replacement',
-    caption: 'New condenser set level on a poured pad with a service disconnect.',
-    city: 'Scottsdale',
-  },
-];
 
 export default function ProjectsPage() {
   return (
