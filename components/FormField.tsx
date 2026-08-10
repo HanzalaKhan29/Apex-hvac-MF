@@ -18,6 +18,18 @@ import { ChevronDown, CircleAlert } from 'lucide-react';
  *   - Mobile input types are mandatory: type="tel" for phone (numeric keypad),
  *     inputmode="numeric" with maxlength="5" for zip, native <select> for the
  *     dropdowns — no custom listbox (§6.1 item 3).
+ *
+ * NO SILENT DEFAULT SELECTION (Z.40, real bug, owner-reported + screenshot).
+ * Without an explicit `defaultValue`, a native <select> with no option marked
+ * `selected` just shows its FIRST <option> as selected — the browser does
+ * this silently, so the quote form was defaulting to "AC Repair &
+ * Diagnostics" for every visitor who never touched the dropdown, submitting
+ * a real (wrong) service value rather than an obviously-empty one. `select`
+ * fields now always render a disabled `placeholder` option first and start
+ * on it unless a real `defaultValue` is supplied, so an untouched field is
+ * visibly empty and — since the service field's Zod schema is
+ * `z.enum(SERVICE_SLUGS)` — actually fails validation if somehow submitted
+ * unselected, rather than silently mis-routing the lead.
  */
 
 export type FieldKind = 'text' | 'tel' | 'email' | 'select' | 'textarea';
@@ -28,6 +40,9 @@ export interface FormFieldProps {
   label: string;
   required?: boolean;
   options?: readonly { value: string; label: string }[];
+  /** kind="select" only. Rendered as a disabled first option; the field
+   *  starts on it whenever no real `defaultValue` is supplied (Z.40). */
+  placeholder?: string;
   inputMode?: 'numeric' | 'tel';
   maxLength?: number;
   error?: string;
@@ -68,6 +83,7 @@ export default function FormField({
   label,
   required,
   options,
+  placeholder,
   inputMode,
   maxLength,
   error,
@@ -117,9 +133,15 @@ export default function FormField({
         <div className="group relative">
           <select
             {...shared}
+            defaultValue={defaultValue ?? (placeholder ? '' : undefined)}
             disabled={readOnly}
             className={`peer ${controlClass} appearance-none pr-10 hover:border-n-700`}
           >
+            {placeholder ? (
+              <option value="" disabled>
+                {placeholder}
+              </option>
+            ) : null}
             {options?.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}

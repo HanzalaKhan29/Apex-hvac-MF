@@ -151,6 +151,7 @@ export default function CallbackForm({ formLocation }: CallbackFormProps) {
           label="Best time to call"
           required
           readOnly={pending}
+          placeholder="Select a time"
           options={BEST_TIME_OPTIONS}
           error={errors.bestTime}
         />

@@ -696,8 +696,23 @@
    Same compositor-only technique as the two blocks above: one CSS animation,
    no JS, no observer. Pause on hover/focus is plain :hover/:focus-within, no
    listener needed. Reduced-motion is covered by the I.8 block above without
-   extra code, since it zeroes every animation-duration on the page. */
-.apex-logo-viewport:hover .apex-logo-track,
+   extra code, since it zeroes every animation-duration on the page.
+
+   Z.40 fix — real bug, owner-reported: :hover was ungated, and touch
+   browsers simulate a lingering ":hover" state on tap that only clears on
+   the NEXT tap elsewhere (there is no real "pointer left" event on touch) —
+   so tapping the strip on a phone froze the marquee indefinitely, exactly
+   what was reported. Gated behind `(hover: hover)` now, the same guard
+   .cursor-spotlight already uses above for the identical class of bug.
+   :focus-within stays ungated: a real keyboard focus state is intentional
+   and reverses on blur, it doesn't linger the way touch-simulated hover
+   does. */
+@media (hover: hover) {
+  .apex-logo-viewport:hover .apex-logo-track {
+    animation-play-state: paused;
+  }
+}
+
 .apex-logo-viewport:focus-within .apex-logo-track {
   animation-play-state: paused;
 }

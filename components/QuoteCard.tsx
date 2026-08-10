@@ -21,8 +21,16 @@ import FormError from './FormError';
  *          Flat-Rate Quote", sub "No obligation · Upfront pricing · Response
  *          within 30 minutes". That is the "Respond" term per §2.5's
  *          vocabulary table, never blended with dispatch or same-day.
- *   page — same fields, flat on --apex-paper inside a <Section />, id="quote",
- *          so #quote anchors from elsewhere resolve here (§3.4, A.13).
+ *   page — same fields, flat on --apex-paper inside a <Section />.
+ *
+ * id="quote" (Z.40 fix, real bug): BOTH variants carry it. It was
+ * hero-variant-conditional before — `isHero ? undefined : 'quote'` — which
+ * meant the homepage, the one route where <MobileStickyBar />'s "Get Quote"
+ * and <Hero />'s own primary CTA BOTH point at `#quote` (lib/routes.ts's
+ * `ROUTES_WITH_FORM` includes `/`), had no element with that id at all.
+ * Clicking either button did nothing — no scroll, no error, just silence.
+ * Confirmed by reading the id logic and ROUTES_WITH_FORM together, not by
+ * guessing from the symptom.
  *
  * RESPONSIVE (B.11, H.5.8): at md+ Service and Zip share a row while Name and
  * Phone stay full-width; below md all four are full-width. The submit button is
@@ -113,7 +121,7 @@ export default function QuoteCard({
 
   return (
     <div
-      id={isHero ? undefined : 'quote'}
+      id="quote"
       className={
         isHero
           ? 'rounded-2xl bg-apex-paper p-s4 text-n-950 shadow-lg md:p-s5 [--accent:var(--color-apex-copper)]'
@@ -165,6 +173,7 @@ export default function QuoteCard({
               required
               readOnly={pending}
               defaultValue={initial('service', defaultService)}
+              placeholder="Select a service"
               options={SERVICE_OPTIONS}
               error={errors.service}
             />
