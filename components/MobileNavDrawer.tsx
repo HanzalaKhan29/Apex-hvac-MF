@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ChevronDown, X } from 'lucide-react';
 import PhoneLink from './PhoneLink';
 import Button from './Button';
+import Logo from './Logo';
 import type { MegaMenuItem } from './MegaMenu';
 
 /**
@@ -27,6 +28,22 @@ import type { MegaMenuItem } from './MegaMenu';
  *
  * Focus is trapped inside the drawer while open and returns to the hamburger
  * on close. Escape closes. The scrim is aria-hidden and click-dismisses.
+ *
+ * VISUAL POLISH — Z.39 (Appendix Z), owner-reported: the drawer read as
+ * generic/basic (plain list, no brand presence). Added a header row (the
+ * mark, not the full lockup — narrow panel) so the drawer reads as Apex's
+ * own surface rather than an unbranded system sheet, a subtle background
+ * tint on the open accordion section (so the active section is visually
+ * obvious, not just inferred from a chevron), and a divided, slightly
+ * elevated footer block around the phone link and CTA so they read as a
+ * distinct "always visible" zone rather than trailing off the list.
+ *
+ * The `[open]`-driven chevron rotation and section tint are plain CSS in
+ * globals.css (`.drawer-item[open] ...`), not a Tailwind `group-open:` or
+ * `[&[open]_...]` variant — both were tried on <FAQAccordion /> in this same
+ * pass and neither compiled in this project's Tailwind v4 build (verified
+ * in the served stylesheet, documented there). Reusing the same known-good
+ * plain-CSS approach here rather than re-discovering the same dead end.
  */
 
 export interface MobileNavDrawerProps {
@@ -96,10 +113,14 @@ export default function MobileNavDrawer({
   if (!open) return null;
 
   const section = (label: string, items: readonly MegaMenuItem[], viewAll: MegaMenuItem) => (
-    <details name="apex-drawer" className="border-b border-n-200">
-      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between py-s3 font-geist font-bold transition-colors duration-[var(--dur-button)] ease-out [&::-webkit-details-marker]:hidden hover:text-[var(--accent)]">
+    <details name="apex-drawer" className="drawer-item border-b border-n-200">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between rounded-md px-s2 py-s3 font-geist font-bold transition-colors duration-[var(--dur-button)] ease-out [&::-webkit-details-marker]:hidden hover:text-[var(--accent)]">
         {label}
-        <ChevronDown aria-hidden="true" strokeWidth={2} className="size-5" />
+        <ChevronDown
+          aria-hidden="true"
+          strokeWidth={2}
+          className="drawer-chevron size-5 transition-transform duration-[var(--dur-hover)] ease-out"
+        />
       </summary>
       <ul className="flex list-none flex-col pb-s3">
         {[...items, viewAll].map((item, i) => (
@@ -143,18 +164,19 @@ export default function MobileNavDrawer({
            they close it. */
         className="fixed inset-y-0 right-0 z-[var(--z-nav-overlay)] flex w-[min(88vw,22rem)] flex-col overflow-y-auto overscroll-contain bg-apex-paper px-s4 pb-[calc(var(--stickybar-h)+var(--s-4))] pt-s3 shadow-lg transition-transform duration-[var(--dur-hover)] ease-out"
       >
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between border-b border-n-200 pb-s3">
+          <Logo variant="mark" scheme="dark" className="h-8 w-auto" />
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex size-11 items-center justify-center rounded-md"
+            className="inline-flex size-11 items-center justify-center rounded-md text-n-700 transition-colors duration-[var(--dur-button)] ease-out hover:text-apex-ink"
           >
             <X aria-hidden="true" strokeWidth={2} className="size-6" />
             <span className="visually-hidden">Close navigation</span>
           </button>
         </div>
 
-        <nav aria-label="Mobile" className="mt-s2 flex flex-col">
+        <nav aria-label="Mobile" className="mt-s1 flex flex-col">
           {section('Services', services, {
             label: 'View All Services',
             href: '/services',
@@ -187,7 +209,9 @@ export default function MobileNavDrawer({
           </ul>
         </nav>
 
-        <div className="mt-s5 flex flex-col gap-s3">
+        {/* Visually distinct "always visible" zone (Z.39) — a bg tint and
+            top border, rather than trailing off as the last two list rows. */}
+        <div className="mt-s5 flex flex-col gap-s3 rounded-xl border border-n-200 bg-n-50 p-s4">
           <PhoneLink display="full" context="header" />
           <Button variant="primary" href="/contact" fullWidth>
             Get a Quote

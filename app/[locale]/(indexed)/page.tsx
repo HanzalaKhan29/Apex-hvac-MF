@@ -193,7 +193,6 @@ export default function HomePage() {
       <TrustPhotoBand
         heading="Real crew, real accountability."
         body="Every truck on the road is a background-checked Apex technician in a marked, branded vehicle. Never a subcontractor you're meeting for the first time at your door."
-        cta={{ label: CTA.full, href: '#quote' }}
       />
 
       {/* 6 — Financing. A standalone visual beat, not a feature-list item. */}

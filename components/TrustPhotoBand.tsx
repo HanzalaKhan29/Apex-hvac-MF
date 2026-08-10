@@ -1,7 +1,6 @@
 import Image from 'next/image';
 import { CheckCircle2 } from 'lucide-react';
 import Section from './Section';
-import Button from './Button';
 
 /**
  * Z.36 — <TrustPhotoBand /> (Appendix Z addition, new component).
@@ -29,10 +28,18 @@ import Button from './Button';
  * depending on viewport width — same failure shape, so it gets the same flat
  * fix pre-emptively rather than waiting to reproduce the bug.
  *
- * CTA: reuses CTA.full verbatim rather than inventing new wording — a
- * repeated identical CTA reinforcing one intent down a long page is the
- * correct pattern (an inconsistent RELABEL of the same intent is the anti-
- * pattern the design skills flag, not repetition itself).
+ * NO CTA BUTTON — Z.39 update (Appendix Z), owner-reported glitch. The
+ * button this section carried at launch duplicated an intent every other
+ * mechanism on the page already owns (hero, footer CTA, financing banner,
+ * and — the actual bug — <MobileStickyBar />, which is FIXED at the
+ * viewport bottom on every route below lg). Whenever this section's own
+ * button scrolled toward the bottom of the viewport, it sat directly behind
+ * or beside the sticky bar's identically-styled copper "Get Quote" button,
+ * reading as two stacked/overlapping CTAs. Removing the button here fixes
+ * that collision AND removes real redundancy — the design skills loaded
+ * this session flag exactly this pattern ("No Duplicate CTA Intent"). This
+ * section's job is trust-building (the checklist), not one more conversion
+ * ask.
  *
  * MOTION: picked up automatically by <EntranceMotion />'s generic
  * `[data-ground]` sweep (Z.32) like every other section — no bespoke wiring
@@ -48,10 +55,9 @@ const POINTS = [
 export interface TrustPhotoBandProps {
   heading: string;
   body: string;
-  cta: { label: string; href: string };
 }
 
-export default function TrustPhotoBand({ heading, body, cta }: TrustPhotoBandProps) {
+export default function TrustPhotoBand({ heading, body }: TrustPhotoBandProps) {
   return (
     <Section
       ground="ink"
@@ -90,12 +96,6 @@ export default function TrustPhotoBand({ heading, body, cta }: TrustPhotoBandPro
               </li>
             ))}
           </ul>
-
-          <div className="mt-s6">
-            <Button variant="primary" size="lg" href={cta.href}>
-              {cta.label}
-            </Button>
-          </div>
         </div>
       </div>
     </Section>

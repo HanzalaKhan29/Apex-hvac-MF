@@ -755,3 +755,16 @@
   transform: rotate(45deg);
   color: white;
 }
+
+/* Z.39 — <MobileNavDrawer />'s open-section chevron + active-row tint. Same
+   plain-CSS approach as .faq-item above, for the same reason (the Tailwind
+   variant equivalents don't compile in this build). */
+.drawer-item[open] > summary {
+  color: var(--color-apex-copper);
+  background-color: var(--color-n-50);
+}
+
+.drawer-item[open] .drawer-chevron {
+  transform: rotate(180deg);
+  color: var(--color-apex-copper);
+}
