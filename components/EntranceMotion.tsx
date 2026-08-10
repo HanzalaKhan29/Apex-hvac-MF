@@ -56,7 +56,25 @@ import Lenis from 'lenis';
  * and returns early before any GSAP call. Content already renders at its
  * final visible state from SSR/CSS, so a reduced-motion visitor (or a visitor
  * whose JS fails to load at all) sees the real page, not a hidden one.
+ *
+ * NO FLASH ON ALREADY-VISIBLE CONTENT — Z.41 fix (Appendix Z), real bug,
+ * owner-reported ("image shows, then it reloads"). `gsap.from()` defaults to
+ * `immediateRender: true`: the moment a tween is CREATED, it snaps its
+ * target straight to the "from" values (opacity 0 here), before ScrollTrigger
+ * even evaluates whether that trigger's start point has already been passed.
+ * Because this whole component is a `dynamic(..., { ssr: false })` chunk
+ * (Z.32, for the bundle budget), it always executes some time AFTER first
+ * paint — so any section that was ALREADY on screen at that moment got
+ * yanked to invisible for a frame and then snapped back, which reads exactly
+ * as "the image flashed and reloaded." Fix: before creating each tween,
+ * `isAlreadyRevealed()` checks the element's position against the same
+ * `top 85%` line ScrollTrigger itself will use — content that's already
+ * past that line is left alone entirely (no tween created at all), and only
+ * genuinely below-the-fold content gets the reveal animation.
  */
+function isAlreadyRevealed(el: Element): boolean {
+  return el.getBoundingClientRect().top < window.innerHeight * 0.85;
+}
 export default function EntranceMotion() {
   useLayoutEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -83,6 +101,8 @@ export default function EntranceMotion() {
       // ---- Explicit stagger containers (data-entrance) ---------------------
       const staggerContainers = gsap.utils.toArray<HTMLElement>('[data-entrance]');
       staggerContainers.forEach((container) => {
+        if (isAlreadyRevealed(container)) return;
+
         const items = container.querySelectorAll<HTMLElement>('[data-entrance-item]');
         const targets = items.length ? Array.from(items) : [container];
         gsap.from(targets, {
@@ -106,6 +126,7 @@ export default function EntranceMotion() {
         if (section.dataset.motion === 'none') return;
         if (section.hasAttribute('data-entrance')) return;
         if (section.querySelector('[data-entrance]')) return;
+        if (isAlreadyRevealed(section)) return;
 
         gsap.from(section, {
           opacity: 0,
