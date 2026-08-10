@@ -989,3 +989,13 @@ missing before, now both the open-intent and close-grace paths use it.
 ---
 
 **Note on user-supplied reference images this session**: the owner generated two candidate photos with prompts given earlier in this pass and asked for them to replace `commercial-rooftop-rtu.jpg` and `technician-condenser-repair.jpg`. They were shared as inline chat images, not as files on this machine's filesystem — there is no local path to read them from, so they have not been saved. The owner needs to either save the two files into `public/images/` under those exact names themselves, or share a filesystem path / re-run the generation through a connected tool that writes to disk.
+
+
+## Z.37 — homepage "Recent work" teaser, real project photography
+
+| | |
+|---|---|
+| **Trigger** | Owner, after seeing the live redesigned site, said it still read as cheap next to the two references and asked for another pass. |
+| **Fix** | New 5a section on the homepage: a three-card teaser pulling from `/projects`'s real completed-work photography, plus a "View All Projects" link. `PROJECTS` moved from an inline array in `app/[locale]/(indexed)/projects/page.tsx` into `lib/projects.ts` (matching `lib/services.ts` / `lib/cities.ts`'s existing one-file-per-content-domain pattern) so the homepage teaser and the full page read the same captions rather than a second, driftable copy. |
+| **Placement reasoning** | Sits between `<WhyApexSection />` and `<TrustPhotoBand />`, not next to `<ServicesGrid />` or between `<ProcessSection />`/`<ReviewsSection />` (already two adjacent card grids) — a third card grid in a row would be the exact repetition pattern this redesign pass has been working against. Ground is `"paper"`, deliberately not `"n50"`, because `<WhyApexSection />` immediately above already uses `"n50"`; repeating it would merge the two sections into one band with no visible seam. |
+| **Verified** | `npm run typecheck`, `npm run build` (bundle gate pass, unchanged from the prior push since `<ProjectCard />` was already bundled elsewhere), `npx eslint`, `npm run check:emdash` all clean. Confirmed on the live dev server: the homepage teaser renders 3 real photos with correct alt text, and `/projects` itself still renders all 5 after the data move. Pushed (`2c57822..a6188fd`) and live via Vercel auto-deploy. |
