@@ -5,10 +5,20 @@ import { CITY_LIST, cityPath } from './cities';
 import { SERVICE_ICONS } from './service-icons';
 import { ph } from './placeholders';
 
-/** <ServiceCard /> props for all six services, in §5.5 card order. */
+/**
+ * <ServiceCard /> props for all six services, in §5.5 card order.
+ *
+ * Z.35 — threads each service's own `image`/`imageAlt`/`focalPoint` (already
+ * defined per-entry in lib/services.ts for the service detail pages) into the
+ * card too, so the homepage/services-index grid gets real photography
+ * instead of an icon tile. See ServiceCard.tsx's own header for the reasoning.
+ */
 export function serviceCards() {
   return SERVICE_LIST.map((service) => ({
     icon: SERVICE_ICONS[service.slug],
+    image: service.image,
+    imageAlt: service.imageAlt,
+    focalPoint: service.focalPoint,
     title: service.cardTitle,
     description: service.cardDescription,
     href: servicePath(service.slug),
@@ -22,6 +32,9 @@ export function relatedCards(slugs: readonly ServiceSlug[]) {
     const service = SERVICE_LIST.find((s) => s.slug === slug)!;
     return {
       icon: SERVICE_ICONS[slug],
+      image: service.image,
+      imageAlt: service.imageAlt,
+      focalPoint: service.focalPoint,
       title: service.cardTitle,
       description: service.cardDescription,
       href: servicePath(slug),
@@ -30,10 +43,15 @@ export function relatedCards(slugs: readonly ServiceSlug[]) {
   });
 }
 
-/** <ServiceCard variant="city" /> props for all five cities. */
+/** <ServiceCard variant="city" /> props for all five cities (Z.35: + photo). */
 export function cityCards() {
   return CITY_LIST.map((city) => ({
     variant: 'city' as const,
+    image: city.image,
+    // Decorative, alt="" by the same rule Hero.tsx's city variant already
+    // follows (A.6, H.4.1) — the card's own link text names the destination.
+    imageAlt: city.imageAlt,
+    focalPoint: city.focalPoint,
     title: city.name,
     description: city.details[0].description.slice(0, 130),
     href: cityPath(city.slug),

@@ -404,15 +404,27 @@
   }
 
   /* Headings carry the display family and tracking by default; components
-     still set their own size from the C.5 scale. */
-  :where(h1, h2, h3, h4, h5, h6) {
+     still set their own size from the C.5 scale.
+
+     Z.33 — REAL BUG, verified via computed styles (not a design opinion):
+     every heading sitewide was rendering at font-weight 400, indistinguishable
+     from body text. `:where()` zeroes specificity, and Tailwind v4's own
+     preflight (pulled in by `@import 'tailwindcss'` above) sets a plain
+     `h1,h2,...{font-weight:inherit}` reset with real element-selector
+     specificity — that beats `:where(h1...)`'s zero specificity outright,
+     regardless of source order, so the 800 below never actually applied.
+     Dropping `:where()` here costs nothing: Tailwind utility classes still
+     win over base-layer rules unconditionally (the `utilities` cascade layer
+     always outranks `base`), which is the only thing `:where()` could have
+     been protecting. */
+  h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-geist);
     font-weight: 800;
     letter-spacing: var(--tracking-tight);
     text-wrap: balance;
   }
 
-  :where(h3, h4, h5, h6) {
+  h3, h4, h5, h6 {
     font-weight: 700;
     letter-spacing: normal;
   }

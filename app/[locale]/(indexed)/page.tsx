@@ -6,6 +6,7 @@ import LogoStrip from '@/components/LogoStrip';
 import ServicesGrid from '@/components/ServicesGrid';
 import StatsSection from '@/components/StatsSection';
 import WhyApexSection from '@/components/WhyApexSection';
+import TrustPhotoBand from '@/components/TrustPhotoBand';
 import FinancingBanner from '@/components/FinancingBanner';
 import ProcessSection from '@/components/ProcessSection';
 import ReviewsSection from '@/components/ReviewsSection';
@@ -23,15 +24,17 @@ import { gateOpen } from '@/lib/placeholders';
  * HOMEPAGE'S JOB IS TO ROUTE, NOT TO CONVERT EVERYONE (§1.4) — dedicated
  * service pages convert at 15–25% against 3–5% for homepage traffic.
  *
- * Ordered sections (§5, sequence carried forward from phase0 per §0.2):
- *   1 Hero + QuoteCard   58/42 asymmetric, --apex-ink, no background photo
- *   2 Manufacturer strip gated by §9.4
- *   3 Services           6 cards, 3×2
- *   4 Stats              4 blocks on --apex-ink
- *   5 Why Apex           image/text split, 4 rows, floating stat badge
- *   6 Financing banner   --apex-sage-tint ground, --apex-ink text
- *   7 Process            4 steps
- *   8 Reviews            3 cards, demo-mode attribution
+ * Ordered sections (§5, sequence carried forward from phase0 per §0.2;
+ * Z.36 inserts 5b, everything after renumbers by one but keeps its §5 role):
+ *   1  Hero + QuoteCard   58/42 asymmetric, --apex-ink, no background photo
+ *   2  Manufacturer strip gated by §9.4
+ *   3  Services           6 cards, 3×2, each now a real photo (Z.35)
+ *   4  Stats              4 blocks on --apex-ink
+ *   5  Why Apex           image/text split, 4 rows, floating stat badge
+ *   5b Trust photo band   full-bleed real crew photo, --apex-ink scrim (Z.36)
+ *   6  Financing banner   --apex-sage-tint ground, --apex-ink text
+ *   7  Process            4 steps
+ *   8  Reviews            3 cards, demo-mode attribution
  */
 
 export const metadata: Metadata = {
@@ -121,7 +124,6 @@ export default function HomePage() {
       <ServicesGrid
         id="services"
         variant="full"
-        eyebrow={HOME.services.eyebrow}
         heading={HOME.services.heading}
         items={serviceCards()}
         showViewAll
@@ -134,7 +136,6 @@ export default function HomePage() {
 
       {/* 5 — Why Apex. Evidence-led, not claim-led. */}
       <WhyApexSection
-        eyebrow={HOME.whyApex.eyebrow}
         heading={HOME.whyApex.heading}
         image={{
           src: 'technician-condenser-repair.jpg',
@@ -143,6 +144,14 @@ export default function HomePage() {
         }}
         badge={HOME.whyApex.badge}
         features={whyFeatures}
+      />
+
+      {/* 5b — Z.36: full-bleed photo trust band, a fourth distinct layout
+              family so the page doesn't read as card, card, card end to end. */}
+      <TrustPhotoBand
+        heading="Real crew, real accountability."
+        body="Every truck on the road is a background-checked Apex technician in a marked, branded vehicle. Never a subcontractor you're meeting for the first time at your door."
+        cta={{ label: CTA.full, href: '#quote' }}
       />
 
       {/* 6 — Financing. A standalone visual beat, not a feature-list item. */}
@@ -164,7 +173,6 @@ export default function HomePage() {
       <ReviewsSection
         variant="curated"
         mode="demo"
-        eyebrow={HOME.reviews.eyebrow}
         heading={HOME.reviews.heading}
         reviews={DEMO_REVIEWS.map((r) => ({ ...r }))}
         showViewAll

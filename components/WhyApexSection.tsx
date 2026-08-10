@@ -19,7 +19,10 @@ import FeatureRow, { type FeatureRowProps } from './FeatureRow';
  * in frame at BOTH ratios. Without it, object-fit: cover's centre default
  * crops the subject's head at the 4:5 crop.
  *
- * MOTION: none — the section sits below the §4.11 threshold.
+ * MOTION (Z.32): the section now scroll-reveals as a whole via
+ * <EntranceMotion />'s generic `[data-ground]` sweep (opt-out, not opt-in —
+ * see that file). The photo additionally carries `data-parallax` for a
+ * subtle scroll-scrubbed depth drift, independent of the reveal.
  */
 
 export interface WhyApexSectionProps {
@@ -43,14 +46,16 @@ export default function WhyApexSection({
       <div className="grid gap-s6 lg:grid-cols-2 lg:items-center">
         <div className="relative order-first min-w-0">
           <div className="relative aspect-[16/9] overflow-hidden rounded-2xl lg:aspect-[4/5]">
-            <Image
-              src={`/images/${image.src}`}
-              alt={image.alt}
-              fill
-              priority
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              style={{ objectFit: 'cover', objectPosition: image.focalPoint }}
-            />
+            <div data-parallax="-10" className="absolute inset-[-8%]">
+              <Image
+                src={`/images/${image.src}`}
+                alt={image.alt}
+                fill
+                priority
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                style={{ objectFit: 'cover', objectPosition: image.focalPoint }}
+              />
+            </div>
           </div>
 
           {/*

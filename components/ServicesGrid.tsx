@@ -20,11 +20,13 @@ import Button from './Button';
  * link pinned to the bottom, so six cards of varying copy length produce even
  * heights without a min-height hack (§5.5).
  *
- * MOTION (§4.11, B.23): the homepage instance is the one grid above the
- * entrance threshold and the only one that animates in. Every other instance
- * renders statically with NO IntersectionObserver attached at all — not
- * "observe and skip". Opting in is `animateEntrance`, which only marks the
- * grid; <EntranceMotion /> does the single threshold measurement.
+ * MOTION (B.23; §4.11's threshold restriction lifted by Z.32). `animateEntrance`
+ * still marks the grid `data-entrance` for CARD-LEVEL stagger (each
+ * <ServiceCard /> reveals individually) — originally the homepage-only
+ * distinction. Every other instance is no longer static: <EntranceMotion />'s
+ * generic `[data-ground]` sweep now fades the whole <Section /> (heading +
+ * grid together) as one block when it scrolls into view, since it isn't
+ * marked `data-entrance` and so falls through to that fallback.
  */
 
 export interface ServicesGridProps {

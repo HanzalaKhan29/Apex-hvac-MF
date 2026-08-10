@@ -24,6 +24,13 @@ import TrustBadge, { type TrustBadgeProps } from './TrustBadge';
  * --stagger-hero (80ms). The quote card slides in from the right after
  * --delay-quotecard (150ms) over --dur-quotecard (700ms). Under
  * prefers-reduced-motion both render instantly at final state.
+ *
+ * `data-motion="none"` opts this section OUT of Z.32's generic scroll-reveal
+ * (<EntranceMotion />) — the hero already animates on load and is usually
+ * already on screen at that point, so a second scroll-triggered fade would
+ * either be invisible (already past threshold) or double up. Its background
+ * glow / media still carry `data-parallax` for Z.32's scroll-scrubbed depth
+ * layer, which is an independent mechanism from the reveal.
  */
 
 export interface HeroProps {
@@ -63,6 +70,7 @@ export default function Hero({
     <section
       aria-labelledby="hero-heading"
       data-ground={onInk ? 'ink' : 'paper'}
+      data-motion="none"
       className={[
         'relative overflow-hidden',
         onInk
@@ -80,6 +88,7 @@ export default function Hero({
            prefers-reduced-motion by the global rule. */
         <div
           aria-hidden="true"
+          data-parallax="-10"
           className="hero-drift pointer-events-none absolute inset-0 opacity-[0.16]"
         />
       ) : null}
@@ -175,14 +184,16 @@ export default function Hero({
             ].join(' ')}
             style={delay(2)}
           >
-            <Image
-              src={`/images/${image.src}`}
-              alt={image.alt}
-              fill
-              priority
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              style={{ objectFit: 'cover', objectPosition: image.focalPoint }}
-            />
+            <div data-parallax="-8" className="absolute inset-[-6%]">
+              <Image
+                src={`/images/${image.src}`}
+                alt={image.alt}
+                fill
+                priority
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                style={{ objectFit: 'cover', objectPosition: image.focalPoint }}
+              />
+            </div>
           </div>
         ) : null}
       </div>

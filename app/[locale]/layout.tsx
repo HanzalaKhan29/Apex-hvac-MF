@@ -6,9 +6,21 @@ import Analytics from '@/components/Analytics';
 import PointerSpotlight from '@/components/PointerSpotlight';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import WebVitals from '@/components/WebVitals';
-import EntranceMotion from '@/components/EntranceMotion';
+import EntranceMotion from '@/components/EntranceMotionLoader';
 import { SERVICE_LIST, servicePath } from '@/lib/services';
 import { CITY_LIST, cityPath } from '@/lib/cities';
+
+/**
+ * Z.32 — <EntranceMotion /> now carries gsap + ScrollTrigger + lenis (see its
+ * own file header). Imported here via <EntranceMotionLoader />, a one-line
+ * client wrapper around `dynamic(..., { ssr: false })` (that option is only
+ * legal inside a Client Component, and this layout is a Server Component by
+ * design — see the DOM-order note below). Same intent as J.6's <MegaMenu /> /
+ * <MobileNavDrawer /> technique: ship the weight as a separate
+ * post-hydration chunk instead of inflating first-load JS on every route
+ * (J.4's bundle budget has almost no headroom left — see
+ * scripts/check-bundle.mjs).
+ */
 
 /**
  * The global chrome, mounted ONCE (A.0.1, B.33).
