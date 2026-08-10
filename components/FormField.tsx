@@ -108,12 +108,17 @@ export default function FormField({
 
       {kind === 'select' ? (
         /* Styled to match text inputs exactly, with a custom chevron rather
-           than the browser default (§4.8). Still a NATIVE <select> (§6.1). */
-        <div className="relative">
+           than the browser default (§4.8). Still a NATIVE <select> (§6.1) —
+           the OPTION LIST ITSELF is the browser/OS's own popup and cannot be
+           restyled without abandoning the native control (owner-confirmed
+           tradeoff: native wins for the mobile picker, since mobile is
+           70-78% of this form's traffic, §1.4). `peer` on the select drives
+           the chevron's hover/focus state purely in CSS, no JS. */
+        <div className="group relative">
           <select
             {...shared}
             disabled={readOnly}
-            className={`${controlClass} appearance-none pr-10`}
+            className={`peer ${controlClass} appearance-none pr-10 hover:border-n-700`}
           >
             {options?.map((o) => (
               <option key={o.value} value={o.value}>
@@ -124,7 +129,7 @@ export default function FormField({
           <ChevronDown
             aria-hidden="true"
             strokeWidth={2}
-            className="pointer-events-none absolute right-s3 top-1/2 size-5 -translate-y-1/2 text-n-700"
+            className="pointer-events-none absolute right-s3 top-1/2 size-5 -translate-y-1/2 text-n-700 transition-[color,transform] duration-[var(--dur-button)] ease-out peer-hover:text-apex-ink peer-focus:rotate-180 peer-focus:text-apex-copper"
           />
         </div>
       ) : kind === 'textarea' ? (

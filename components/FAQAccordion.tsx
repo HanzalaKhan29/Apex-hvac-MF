@@ -24,6 +24,13 @@ import { serialiseJsonLd } from '@/lib/jsonld';
  * pattern is hand-rolled. All items closed by default; MULTIPLE MAY BE OPEN
  * simultaneously, unlike the mobile nav drawer where one-at-a-time is
  * deliberate. <summary> meets the 44px standalone-control minimum.
+ *
+ * ICON BADGE — Z.38 (Appendix Z), owner-requested visual polish pass. Was a
+ * bare +/x glyph; now sits in the same 40px circular ring <ServiceCard />'s
+ * icon badge already uses, so the accordion reads as part of the same
+ * component language instead of a one-off. Still the native <details>
+ * engine underneath — [open] drives the rotation and ring fill purely via
+ * the existing `group`/CSS selector, no JS added.
  */
 
 export interface FAQAccordionProps {
@@ -65,21 +72,30 @@ export default function FAQAccordion({
           which is both a CLS problem and a reading problem (H.5.7). */}
       <div className="mt-s6 measure-body">
         {items.map((item) => (
-          <details
-            key={item.question}
-            className="group border-b border-n-200 [&[open]_.faq-icon]:rotate-45"
-          >
-            <summary className="group/row flex min-h-11 cursor-pointer list-none items-center justify-between gap-s3 py-s3 [&::-webkit-details-marker]:hidden">
-              <h3 className="text-h4 text-apex-ink transition-colors duration-[var(--dur-button)] ease-out group-hover/row:text-[var(--accent)]">
+          <details key={item.question} className="faq-item group border-b border-n-200">
+            <summary className="group/row flex min-h-11 cursor-pointer list-none items-center gap-s3 py-s3 [&::-webkit-details-marker]:hidden">
+              <h3 className="flex-1 text-h4 text-apex-ink transition-colors duration-[var(--dur-button)] ease-out group-hover/row:text-[var(--accent)]">
                 {item.question}
               </h3>
-              <Plus
-                aria-hidden="true"
-                strokeWidth={2}
-                className="faq-icon size-5 shrink-0 text-[var(--accent)] transition-transform duration-[var(--dur-hover)] ease-out"
-              />
+              {/* Same 40px ring <ServiceCard />'s icon badge uses (Z.38) —
+                  fills copper and the glyph turns white once open. Two
+                  Tailwind variants were tried first: a hand-written
+                  `[&[open]_...]` selector, then the built-in `group-open:`.
+                  Neither actually compiled in this Tailwind v4 setup —
+                  checked directly in the served stylesheet, not assumed —
+                  so this falls back to two plain-CSS rules in globals.css
+                  (`.faq-item[open] .faq-icon-ring` / `.faq-icon-glyph`),
+                  the same hand-written-CSS approach the codebase already
+                  uses for .hero-drift and .cursor-spotlight. */}
+              <span className="faq-icon-ring inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-n-200 bg-n-100 transition-colors duration-[var(--dur-hover)] ease-out group-hover/row:border-apex-copper">
+                <Plus
+                  aria-hidden="true"
+                  strokeWidth={2}
+                  className="faq-icon-glyph size-5 shrink-0 text-apex-ink transition-transform duration-[var(--dur-hover)] ease-out"
+                />
+              </span>
             </summary>
-            <p className="pb-s4 text-body text-n-700">{item.answer}</p>
+            <p className="pb-s4 pr-[52px] text-body text-n-700">{item.answer}</p>
           </details>
         ))}
       </div>

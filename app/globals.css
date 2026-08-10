@@ -738,3 +738,20 @@
     opacity var(--dur-entrance) var(--ease-out),
     transform var(--dur-entrance) var(--ease-out);
 }
+
+/* Z.38 — <FAQAccordion />'s open-state icon ring. Plain CSS, not a Tailwind
+   variant: both `[&[open]_...]` and the built-in `group-open:` were tried
+   first and neither actually generated a rule in this Tailwind v4 setup
+   (confirmed by inspecting the served stylesheet, not assumed) — [open] on a
+   <details> apparently isn't in this build's default variant set. Same
+   hand-written-CSS fallback the codebase already uses for .hero-drift and
+   .cursor-spotlight rather than fighting the compiler further. */
+.faq-item[open] .faq-icon-ring {
+  border-color: var(--color-apex-copper);
+  background-color: var(--color-apex-copper);
+}
+
+.faq-item[open] .faq-icon-glyph {
+  transform: rotate(45deg);
+  color: white;
+}
