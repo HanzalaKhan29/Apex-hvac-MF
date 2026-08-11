@@ -144,8 +144,17 @@ ${markBody({ inkColor, copperColor: COPPER }).replace(/^/gm, '  ')}
    E.2 — favicon
    A favicon is not a scaled-down logo. Reduced to the two heaviest strokes:
    the outer apex chevron and the longest airflow bar. Minimum stroke at 16x16
-   is 2px; minimum gap between strokes is 2px. No copper at favicon scale.
-   --------------------------------------------------------------------------- */
+   is 2px; minimum gap between strokes is 2px.
+   ---------------------------------------------------------------------------
+   Z.42 (Appendix Z) — "No copper at favicon scale" is REVERSED here,
+   owner-requested: the favicon read as generic/unbranded next to the real
+   mark used everywhere else on the site (header, footer, og-default.jpg,
+   app icons), since none of those carry the ink-only reduction. The
+   chevron/bar split survives — still exactly two strokes, same widths, same
+   E.2 acceptance test — but the bar (the shorter of the two, so the smaller
+   colored area) now carries copper instead of ink, matching the real mark's
+   own copper-accent-plus-ink-mountain pattern at a scale still simple enough
+   to read as two distinct strokes rather than a blob. */
 
 const FAV_STROKE = 4.5; // 2.25px at 16x16
 const FAV_CHEVRON = 'M9 19 L19 6 L27 28';
@@ -157,27 +166,31 @@ function faviconSvg() {
        open tabs. If the mark reads as a grey blob rather than a distinct
        shape, simplify further. -->
   <style>
-    .mark { stroke: ${INK}; }
+    .chevron { stroke: ${INK}; }
     .ground { fill: ${PAPER}; }
     @media (prefers-color-scheme: dark) {
-      .mark { stroke: ${PAPER}; }
+      .chevron { stroke: ${PAPER}; }
       .ground { fill: ${INK}; }
     }
   </style>
   <rect class="ground" width="32" height="32"/>
-  <g class="mark" fill="none" stroke-width="${FAV_STROKE}" stroke-linecap="butt" stroke-linejoin="miter">
-    <path d="${FAV_CHEVRON}"/>
-    <path d="${FAV_BAR}"/>
+  <g fill="none" stroke-width="${FAV_STROKE}" stroke-linecap="butt" stroke-linejoin="miter">
+    <path class="chevron" d="${FAV_CHEVRON}"/>
+    <path stroke="${COPPER}" d="${FAV_BAR}"/>
   </g>
 </svg>
 `;
 }
 
+/* Z.42 — same chevron-ink / bar-copper split as faviconSvg(), for the
+   .ico's PNG frames (favicon.ico has no media query, so this is the
+   light-mode-only chevron colour — matches the SVG's default/no-preference
+   rendering). */
 const faviconRaster = ({ ground, stroke }) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <rect width="32" height="32" fill="${ground}"/>
-  <g fill="none" stroke="${stroke}" stroke-width="${FAV_STROKE}" stroke-linecap="butt" stroke-linejoin="miter">
-    <path d="${FAV_CHEVRON}"/><path d="${FAV_BAR}"/>
+  <g fill="none" stroke-width="${FAV_STROKE}" stroke-linecap="butt" stroke-linejoin="miter">
+    <path stroke="${stroke}" d="${FAV_CHEVRON}"/><path stroke="${COPPER}" d="${FAV_BAR}"/>
   </g>
 </svg>`;
 
