@@ -37,7 +37,17 @@ export interface SectionProps {
    * the only server-safe way to satisfy the rule.
    */
   labelledBy?: string;
-  /** Permitted for one-off grid definitions only — never spacing or colour (B.7). */
+  /**
+   * Permitted for one-off grid definitions only — never spacing or colour (B.7).
+   *
+   * WHERE IT LANDS DEPENDS ON `width` (Z.43): for the default and narrow
+   * widths it goes on the inner container (the grid it is meant for); for
+   * `full-bleed` there IS no inner container, so it goes on the section
+   * element itself. Before Z.43 the full-bleed case dropped it entirely,
+   * which broke <TrustPhotoBand />'s positioning contract silently — if you
+   * add a full-bleed section with an absolutely-positioned background layer,
+   * this is the prop that gives it a containing block.
+   */
   className?: string;
 }
 
@@ -81,6 +91,28 @@ export default function Section({
         // Fluid inline padding — avoids a fixed value that feels cramped at
         // tablet widths (C.8). Suppressed for full-bleed bands.
         isFullBleed ? '' : 'px-[var(--section-padding-inline)]',
+        /*
+         * Z.43 — REAL BUG, this line is the fix. `className` used to be applied
+         * ONLY to the inner <div> below, which full-bleed does not render — so
+         * for width="full-bleed" the caller's className was silently DISCARDED.
+         *
+         * <TrustPhotoBand /> passes `relative overflow-hidden` here precisely so
+         * its full-bleed <Image fill> (position: absolute; inset: 0) has a
+         * positioned containing block. With the class dropped, the section
+         * stayed position: static, no ancestor up to <html> was positioned, and
+         * the image resolved against the INITIAL CONTAINING BLOCK instead —
+         * painting the crew photo across the top of the document, over the hero,
+         * on every load until <EntranceMotion />'s lazily-loaded GSAP chunk
+         * happened to put a `transform` on the section (which incidentally
+         * creates a containing block) and the image snapped into place.
+         *
+         * That accidental rescue is exactly why it read as "image aati hai,
+         * phir form" and why it looked fine in any measurement taken after the
+         * page had settled. Confirmed on the live site by walking the ancestor
+         * chain: section position:static with only a GSAP matrix on it, and
+         * <main>/<body> both static with no transform.
+         */
+        isFullBleed ? className : '',
       ]
         .filter(Boolean)
         .join(' ')}

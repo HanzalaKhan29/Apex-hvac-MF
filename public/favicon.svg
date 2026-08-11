@@ -1,18 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -8 104 104" width="32" height="32">
   <!-- E.2 acceptance test: render at 16x16 in a browser tab beside four other
        open tabs. If the mark reads as a grey blob rather than a distinct
-       shape, simplify further. -->
+       shape, see the Z.43 note in scripts/build-logo.mjs. -->
   <style>
-    .chevron { stroke: #0A1421; }
+    .peak { stroke: #0A1421; }
     .ground { fill: #FAF8F4; }
     @media (prefers-color-scheme: dark) {
-      .chevron { stroke: #FAF8F4; }
+      .peak { stroke: #FAF8F4; }
       .ground { fill: #0A1421; }
     }
   </style>
-  <rect class="ground" width="32" height="32"/>
-  <g fill="none" stroke-width="4.5" stroke-linecap="butt" stroke-linejoin="miter">
-    <path class="chevron" d="M9 19 L19 6 L27 28"/>
-    <path stroke="#AD5622" d="M15 25.5 L4 29.2"/>
+  <rect class="ground" x="-2" y="-8" width="104" height="104"/>
+  <g fill="none" stroke-linecap="butt" stroke-linejoin="miter">
+    <g stroke="#AD5622" stroke-width="9">
+      <path d="M40 44 L3 56"/>
+      <path d="M34 59 L6 68"/>
+      <path d="M28 73 L11 79"/>
+    </g>
+    <g class="peak" stroke-width="11">
+      <path d="M16 80 L56 8 L96 80"/>
+      <path d="M35 80 L56 41 L77 80"/>
+    </g>
   </g>
 </svg>
