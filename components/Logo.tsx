@@ -54,8 +54,14 @@ const SOURCES = {
 export default function Logo({ variant = 'full', scheme = 'dark', className, priority }: LogoProps) {
   const { dark, light, width, height } = SOURCES[variant];
 
-  // eslint-disable-next-line @next/next/no-img-element
   return (
+    // Z.45 — this directive sat one line higher, where it applied to `return (`
+    // and suppressed nothing: lint reported BOTH the no-img-element warning and
+    // an "unused eslint-disable directive" for it. The raw <img> is deliberate
+    // (see the header comment: fixed-size pre-optimized brand PNG, explicit
+    // width/height so there is no CLS, zero JS cost); it just needs the
+    // directive on the element it actually covers.
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={scheme === 'light' ? light : dark}
       alt=""

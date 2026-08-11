@@ -85,9 +85,19 @@ export default function TrustPhotoBand({ heading, body }: TrustPhotoBandProps) {
        * this value is a no-op there, which is why the mobile framing is
        * unchanged.
        */}
+      {/*
+       * ALT — Z.45 fix, caught by `npm run check:a11y` (I.13 rule 10), which
+       * diffs every rendered alt against Appendix D's image manifest. This
+       * shipped as alt="" (treating the photo as a decorative backdrop) while
+       * the manifest declares it informative, and /about renders the same
+       * asset with the full descriptive alt. Informative is the correct call
+       * here too: this section's entire claim is "Real crew" and the photo is
+       * the evidence for it, so a screen-reader user should get the same
+       * content a sighted one does.
+       */}
       <Image
         src="/images/about-team-shop-bay.jpg"
-        alt=""
+        alt="Four Apex Comfort Systems technicians standing beside a service van in a shop bay"
         fill
         sizes="100vw"
         style={{ objectFit: 'cover', objectPosition: '30% 18%' }}

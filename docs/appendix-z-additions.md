@@ -1085,3 +1085,30 @@ missing before, now both the open-intent and close-grace paths use it.
 | **Fix** | `objectPosition: '30% 18%'`. Same simulation puts the window start at 7.9% (1280px) through 14.2% (3440px), clearing the 19.9% head line across that whole range. Only the vertical value changed; the horizontal `30%` (which governs the mobile framing) is untouched. |
 | **Why mobile is unaffected** | Below `lg` the band's box is *taller* than the image's 3:2 ratio (measured 375x557 against a 250px scaled image height), so `cover` fills the height and crops horizontally instead. There is no vertical overflow, which makes the Y focal point a no-op there — verified, not assumed, so the existing mobile framing is unchanged by this fix. |
 | **Verified** | Live on the dev server at two widths: 1265px → crop starts 7.8%, 12.1% clearance above the heads; 1905px → starts 11.1%, 8.8% clearance. Both computed from the *applied* computed `objectPosition`, not the source value. `npm run typecheck`, `npm run build` (contrast 21/21, bundle gate pass), `npx eslint`, `npm run check:emdash` all clean. |
+
+
+## Z.45 — production-readiness audit: security, correctness and robustness pass
+
+A full attack-minded audit of the shipped codebase. Every item below was
+reproduced before it was changed and re-tested after.
+
+| # | Issue | Severity | Fix |
+|---|---|---|---|
+| 1 | **Turnstile was half-wired and would have killed the lead form.** `verifyTurnstile()` enforced whenever `TURNSTILE_SECRET_KEY` was set, but NOTHING rendered a widget anywhere, so `cf-turnstile-response` could never exist. Setting that one documented env var — which `.env.example` invites and the project's own notes list as pending — would have failed **100% of submissions** closed. | Critical | Added `<TurnstileWidget />` (renders only when `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set, so today's behaviour is bit-for-bit unchanged) inside both forms, and tied enforcement to BOTH keys so the widget and the check switch on together. Truth table verified: today = allow, secret-only = allow (outage removed), fully-configured + no token = **still reject**. |
+| 2 | **Unauthenticated 500 on `/thank-you`.** The `?service=` guard used the `in` operator, which walks the prototype chain, so `?service=constructor` (also `toString`, `valueOf`, `__proto__`, `hasOwnProperty`) passed validation, resolved to a function off `Object.prototype`, and threw a `TypeError` on `.map()`. | High | Switched to `Object.prototype.hasOwnProperty.call()`. All five probes return 200 and fall back to the `general` link set; a valid slug still gets its own links. |
+| 3 | **`formLocation` written to the database unvalidated and unbounded.** The only raw `FormData` read that reached Supabase with no schema. A Server Action is a public endpoint, so anyone could store arbitrary megabytes and pollute dispatch data. | Medium | Validated against the closed set fixed by the two components' prop types; anything else records `'unknown'`. Tested with a 5,005-char tampered payload: stored as `'unknown'`, **and the lead still saved** — junk rejected without dropping a real customer. |
+| 4 | **Double submit sent duplicate leads.** The submit button had `aria-busy` and a "Sending…" label but nothing preventing a second submit, and React 19 *queues* form actions — a double-click wrote two rows and sent two notification emails plus two customer confirmations for one enquiry. | Medium | `aria-disabled` + `preventDefault` while pending, on both forms. Deliberately NOT the `disabled` attribute, because B.11 requires the submit to stay focusable; verified it is still tabbable with no `disabled` attribute. |
+| 5 | **Rate-limiter map grew forever.** An entry was created per unique IP and only pruned if that same IP returned, so a long-lived instance leaked memory in proportion to unique visitors. | Low | Added a sweep past a threshold. Also documented honestly that this limiter is **per instance**, so on serverless it is not a global limit — closing that properly needs shared storage and is an infrastructure decision, not a hardening-pass change. |
+| 6 | **`alt=""` on an informative image** in `<TrustPhotoBand />` (introduced by Z.36), contradicting Appendix D's manifest and `/about`'s treatment of the same asset. Caught by the project's own `check:a11y` gate. | Low | Restored the manifest alt text. `check:a11y` now reports **no issues** across all 24 routes. |
+| 7 | **Dead `eslint-disable`.** The directive in `<Logo />` sat one line above the element it was meant to cover, so lint reported both the original warning and an "unused directive". | Low | Moved onto the element. Lint is now completely clean. |
+
+**Audited and found correct (no change needed):** Supabase RLS (enabled, zero
+policies, service-role only, `server-only` import); security headers (CSP with
+`frame-ancestors 'none'`/`form-action 'self'`/`object-src 'none'`, HSTS
+preload, COOP, nosniff, Permissions-Policy); email templates (every
+lead-supplied value HTML-escaped, and the email regex rejects CRLF so header
+injection is closed); the `apex_lead_last4` cookie (httpOnly, sameSite, secure
+in production, 10-minute lifetime, last four digits only); `proxy.ts` redirects
+(destination derived from `nextUrl`, not user input, so no open redirect); all
+validation server-side in the Server Action; and demo-mode reviews emitting
+**zero** `Review`/`AggregateRating` schema.

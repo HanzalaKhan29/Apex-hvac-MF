@@ -6,6 +6,7 @@ import { useSessionPrefill } from '@/lib/use-session-prefill';
 import { track } from './Analytics';
 import FormField from './FormField';
 import ConsentNotice from './ConsentNotice';
+import TurnstileWidget from './TurnstileWidget';
 import FormError from './FormError';
 
 /**
@@ -117,6 +118,11 @@ export default function CallbackForm({ formLocation }: CallbackFormProps) {
         <input id="company-callback" name="company" tabIndex={-1} autoComplete="off" />
       </div>
 
+      {/* G.4 layer 3 — Turnstile. Renders nothing until the site key is
+          configured (Z.45); must sit inside the <form> so its injected
+          hidden input reaches the Server Action's FormData. */}
+      <TurnstileWidget />
+
       {/* H.2.9 — three fields in a row at md+, stacked below. */}
       <div className="grid gap-s3 md:grid-cols-3">
         <FormField
@@ -192,7 +198,13 @@ export default function CallbackForm({ formLocation }: CallbackFormProps) {
         <button
           type="submit"
           aria-busy={pending || undefined}
-          className="order-1 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-apex-copper px-s4 font-geist font-bold text-white transition-[background-color,translate] duration-[var(--dur-button)] ease-out hover:-translate-y-0.5 hover:bg-apex-copper-hover"
+          /* Z.45 — same double-submit guard as <QuoteCard />; see the comment
+             there for why this is aria-disabled rather than `disabled`. */
+          aria-disabled={pending || undefined}
+          onClick={(event) => {
+            if (pending) event.preventDefault();
+          }}
+          className="order-1 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-apex-copper px-s4 font-geist font-bold text-white transition-[background-color,translate] duration-[var(--dur-button)] ease-out hover:-translate-y-0.5 hover:bg-apex-copper-hover aria-disabled:cursor-not-allowed aria-disabled:opacity-70"
         >
           {pending ? 'Sending…' : 'Request a Callback'}
         </button>

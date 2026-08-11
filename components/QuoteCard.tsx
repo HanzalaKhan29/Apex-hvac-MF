@@ -7,6 +7,7 @@ import { useSessionPrefill } from '@/lib/use-session-prefill';
 import { track } from './Analytics';
 import FormField from './FormField';
 import ConsentNotice from './ConsentNotice';
+import TurnstileWidget from './TurnstileWidget';
 import FormError from './FormError';
 
 /**
@@ -159,6 +160,11 @@ export default function QuoteCard({
           <input id="company-field" name="company" tabIndex={-1} autoComplete="off" />
         </div>
 
+        {/* G.4 layer 3 — Turnstile. Renders nothing until the site key is
+            configured (Z.45); must sit inside the <form> so its injected
+            hidden input reaches the Server Action's FormData. */}
+        <TurnstileWidget />
+
         <div className="grid gap-s3 md:grid-cols-2">
           <div className="md:col-span-1">
             <FormField
@@ -264,10 +270,27 @@ export default function QuoteCard({
             visually; `order` flips the pair (G.5). */}
         <div className="flex flex-col gap-s2">
           <ConsentNotice />
+          {/*
+           * Z.45 — double-submit guard. This button had aria-busy and a
+           * "Sending…" label but nothing actually stopping a second submit,
+           * and React 19 QUEUES form actions rather than dropping them: a
+           * double-click wrote TWO rows to Supabase and sent TWO notification
+           * emails (and two customer confirmations) for one real enquiry.
+           *
+           * Guarded with aria-disabled + preventDefault, NOT the `disabled`
+           * attribute, because B.11's accessibility contract says the submit
+           * "STAYS FOCUSABLE" while pending — `disabled` would pull it out of
+           * the tab order and move focus, which is exactly what that rule
+           * exists to prevent.
+           */}
           <button
             type="submit"
             aria-busy={pending || undefined}
-            className="order-1 inline-flex min-h-14 w-full items-center justify-center rounded-md bg-apex-copper px-s4 font-geist font-bold text-white transition-[background-color,translate] duration-[var(--dur-button)] ease-out hover:-translate-y-0.5 hover:bg-apex-copper-hover"
+            aria-disabled={pending || undefined}
+            onClick={(event) => {
+              if (pending) event.preventDefault();
+            }}
+            className="order-1 inline-flex min-h-14 w-full items-center justify-center rounded-md bg-apex-copper px-s4 font-geist font-bold text-white transition-[background-color,translate] duration-[var(--dur-button)] ease-out hover:-translate-y-0.5 hover:bg-apex-copper-hover aria-disabled:cursor-not-allowed aria-disabled:opacity-70"
           >
             {pending ? 'Sending…' : 'Get Your Flat-Rate Quote'}
           </button>

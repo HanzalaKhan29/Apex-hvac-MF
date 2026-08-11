@@ -133,23 +133,73 @@ function isOutOfArea(zip: string | undefined): boolean {
 /** Layer 2 — reject any submission arriving under 2 seconds from form mount. */
 const MIN_SUBMIT_MS = 2000;
 
-/** Layer 4 — 5 submissions per 10 minutes per IP, enforced server-side. */
+/**
+ * Layer 4 — 5 submissions per 10 minutes per IP, enforced server-side.
+ *
+ * SCOPE, STATED HONESTLY: this Map lives in the instance's memory, so the
+ * limit is PER SERVER INSTANCE, not global. On serverless that means a
+ * determined attacker spread across enough cold starts gets more than 5
+ * attempts in a window. Making it global needs shared storage (Redis/Upstash
+ * or a Supabase table) and a network round-trip on the critical conversion
+ * path; that is a deliberate infrastructure decision for the owner, not
+ * something to slip into a hardening pass. It still does its actual job —
+ * stopping a single client hammering one instance — and the honeypot, time
+ * floor and (once configured) Turnstile are the layers that do not depend on
+ * instance affinity.
+ *
+ * Z.45 — added eviction. `rateBuckets` previously grew forever: an entry was
+ * created per unique IP and only ever pruned if that same IP came back, so a
+ * long-lived instance leaked memory in proportion to unique visitors. Entries
+ * are now swept once the map passes a threshold.
+ */
 const RATE_LIMIT = { max: 5, windowMs: 10 * 60 * 1000 };
+/** Sweep trigger. Well above any plausible legitimate concurrent-visitor count
+ *  for one instance, so the sweep is effectively free in normal operation. */
+const RATE_SWEEP_AT = 5000;
 const rateBuckets = new Map<string, number[]>();
+
+function sweepRateBuckets(now: number): void {
+  for (const [key, hits] of rateBuckets) {
+    // An entry whose most recent hit is outside the window can never affect a
+    // future decision, so it is safe to drop entirely.
+    if (hits.length === 0 || now - hits[hits.length - 1] >= RATE_LIMIT.windowMs) {
+      rateBuckets.delete(key);
+    }
+  }
+}
 
 function rateLimited(ip: string): boolean {
   const now = Date.now();
+  if (rateBuckets.size > RATE_SWEEP_AT) sweepRateBuckets(now);
   const hits = (rateBuckets.get(ip) ?? []).filter((t) => now - t < RATE_LIMIT.windowMs);
   hits.push(now);
   rateBuckets.set(ip, hits);
   return hits.length > RATE_LIMIT.max;
 }
 
-/** Layer 3 — Cloudflare Turnstile, invisible mode. */
+/**
+ * Layer 3 — Cloudflare Turnstile, invisible mode.
+ *
+ * Z.45 — enforcement requires BOTH halves of the configuration, not just the
+ * secret. Before this, setting `TURNSTILE_SECRET_KEY` alone flipped this
+ * function into enforcing mode while nothing rendered a widget (there was no
+ * <TurnstileWidget /> at all), so `token` was always undefined and EVERY
+ * submission failed closed on the branch below. One documented env var would
+ * have silently killed the site's entire conversion path.
+ *
+ * Requiring the public site key too ties enforcement to the widget actually
+ * being deployed, since that key is exactly what makes it render. This is not
+ * a weakening: with no widget there is no token and therefore no protection
+ * either way — the old behaviour rejected real customers as well as bots. The
+ * honeypot, the time-to-submit floor and the IP rate limit are unaffected and
+ * still run on every request.
+ */
 async function verifyTurnstile(token: string | undefined, ip: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
-  // Not configured (local development): the other three layers still apply.
-  if (!secret) return true;
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  // Not fully configured (local development, or a half-finished deploy): the
+  // other three layers still apply.
+  if (!secret || !siteKey) return true;
   if (!token) return false;
 
   try {
@@ -354,7 +404,22 @@ export async function submitLead(
   const data = parsed.data;
   const zip = data.formType === 'quote' ? data.zip : undefined;
   const outOfArea = isOutOfArea(zip);
-  const formLocation = String(formData.get('formLocation') ?? 'unknown');
+  /*
+   * Z.45 — validated against a closed set. This was the ONE field read
+   * straight out of FormData and written to Supabase with no validation and
+   * no length bound: a Server Action is a public endpoint, so anyone could
+   * POST a megabyte of arbitrary text here and have it stored verbatim, and
+   * dispatch would see garbage in the column it uses to tell the hero form
+   * from the footer one. The legitimate values are a closed set fixed by the
+   * two components' own prop types ('hero' | 'contact' | 'service-page' for
+   * <QuoteCard />, 'footer' for <CallbackForm />); anything else is not a
+   * real submission path and is recorded as 'unknown' rather than trusted.
+   */
+  const FORM_LOCATIONS = ['hero', 'contact', 'service-page', 'footer'] as const;
+  const rawLocation = String(formData.get('formLocation') ?? '');
+  const formLocation = (FORM_LOCATIONS as readonly string[]).includes(rawLocation)
+    ? rawLocation
+    : 'unknown';
 
   /*
    * Z.26 — Supabase is now the step that must succeed (owner instruction:

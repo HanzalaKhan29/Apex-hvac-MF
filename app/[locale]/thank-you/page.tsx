@@ -90,8 +90,18 @@ export default async function ThankYouPage({
    * The parameter is VALIDATED AGAINST THIS CLOSED LIST before use and is
    * NEVER ECHOED INTO THE PAGE AS TEXT, which closes the reflected-content
    * vector on the one route that reads a query string (§9.3b, Appendix Z).
+   *
+   * Z.45 — the guard uses hasOwnProperty, NOT the `in` operator. `in` walks
+   * the prototype chain, so `?service=constructor` (and toString, valueOf,
+   * __proto__, hasOwnProperty) passed the old check, resolved to a function
+   * off Object.prototype instead of a link array, and threw a TypeError on
+   * `.map()` below — an unauthenticated 500 on a live route, reproducible by
+   * hand. Verified against each of those five keys before and after.
    */
-  const key = service && service in CONTEXTUAL_LINKS ? service : 'general';
+  const key =
+    service && Object.prototype.hasOwnProperty.call(CONTEXTUAL_LINKS, service)
+      ? service
+      : 'general';
   const links = CONTEXTUAL_LINKS[key];
 
   // Masked to the last four digits; the full number is never in the URL (G.7).
