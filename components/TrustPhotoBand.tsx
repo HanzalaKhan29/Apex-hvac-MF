@@ -65,12 +65,32 @@ export default function TrustPhotoBand({ heading, body }: TrustPhotoBandProps) {
       labelledBy="trust-photo-heading"
       className="relative overflow-hidden"
     >
+      {/*
+       * FOCAL POINT — Z.44 fix, owner-reported ("head is cropped"). This is
+       * exactly the fixed-aspect crop case §4.10 legislates for, and the
+       * vertical value is derived, not eyeballed.
+       *
+       * The band is a short, very wide strip (measured: 478px tall) and the
+       * source is 2800x1867 (3:2), so `cover` scales to fill width and
+       * discards most of the height. At the previous `50%` the visible window
+       * began at 22% of the image at 1280px wide and 39.6% at 3440px — and
+       * the topmost cap sits at 19.9% (measured against the source, not
+       * guessed). So the heads were cut at EVERY desktop width, not just wide
+       * ones.
+       *
+       * 18% puts the window start between 7.9% (1280px) and 14.2% (3440px),
+       * clearing the 19.9% head line with room to spare across that whole
+       * range. Below lg the box is taller than the image ratio, so `cover`
+       * crops horizontally instead and there is no vertical overflow at all —
+       * this value is a no-op there, which is why the mobile framing is
+       * unchanged.
+       */}
       <Image
         src="/images/about-team-shop-bay.jpg"
         alt=""
         fill
         sizes="100vw"
-        style={{ objectFit: 'cover', objectPosition: '30% 50%' }}
+        style={{ objectFit: 'cover', objectPosition: '30% 18%' }}
         className="absolute inset-0"
       />
       {/* Flat, uniform-opacity scrim — guarantees text contrast regardless of
